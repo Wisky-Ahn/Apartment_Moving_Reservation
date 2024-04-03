@@ -14,30 +14,27 @@ export function Login() {
           <button className="text-xl">×</button>
         </div>
         <div className="border-t border-gray-300 pt-4">
-          <div className="flex flex-col space-y-4">
-            <div className="flex flex-col space-y-1">
-              <label className="text-sm font-medium" htmlFor="phone-number">
-                전화번호
-              </label>
-              <div className="flex">
-                <Input className="flex-1" id="phone-number" placeholder="Phone number" />
-                <Button className="ml-2" variant="secondary">
-                  본인 인증
-                </Button>
+          <form method="post" action="/api/auth/callback/credentials">
+            <div className="flex flex-col space-y-4">
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium" htmlFor="phoneNumber">
+                  전화번호
+                </label>
+                <Input name="phoneNumber" id="phone-number" type="text" placeholder="Phone number" />
               </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium" htmlFor="password">
+                  비밀번호
+                </label>
+                <Input name="password" id="password" type="password" placeholder="Password" />
+              </div>
+              <p className="text-xs">
+                로그인 정보를 잊으셨다면, 아래 링크에서 새로운 비밀번호를 요청하실 수 있습니다. <br />
+                전화번호 시작은 반드시 010-으로 시작해야 합니다.
+              </p>
+              <Button type="submit" className="w-full">제출</Button>
             </div>
-            <div className="flex flex-col space-y-1">
-              <label className="text-sm font-medium" htmlFor="password">
-                비밀번호
-              </label>
-              <Input id="password" placeholder="Password" type="password" />
-            </div>
-            <p className="text-xs">
-              로그인 정보를 잊으셨다면, 아래 링크에서 새로운 비밀번호를 요청하실 수 있습니다. <br />
-              전화번호 시작은 반드시 010-으로 시작해야 합니다.
-            </p>
-            <Button className="w-full">제출</Button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
