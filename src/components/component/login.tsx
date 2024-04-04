@@ -5,35 +5,42 @@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-export function Login() {
+interface MainProps {
+  onCloseButtonClick: () => void;
+  onUserButtonClick: () => void;
+}
+
+export function Login({ onCloseButtonClick, onUserButtonClick }: MainProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-md shadow-lg">
         <div className="flex justify-between">
           <h1 className="text-xl font-bold">로그인</h1>
-          <button className="text-xl">×</button>
+          <button className="text-xl" onClick={onCloseButtonClick}>×</button>
         </div>
         <div className="border-t border-gray-300 pt-4">
           <div className="flex flex-col space-y-4">
             <div className="flex flex-col space-y-1">
-              <label className="text-sm font-medium" htmlFor="phoneNumber">
-                전화번호
+              <label className="text-sm font-medium" htmlFor="Id">
+                아이디
               </label>
-              <Input name="phoneNumber" id="phone-number" type="text" placeholder="Phone number" />
+              <div className="flex">
+                <Input className="flex-1" id="Id" placeholder="Id" />
+                
+              </div>
             </div>
             <div className="flex flex-col space-y-1">
               <label className="text-sm font-medium" htmlFor="password">
                 비밀번호
               </label>
-              <Input name="password" id="password" type="password" placeholder="Password" />
+              <Input id="password" placeholder="Password" type="password" />
             </div>
             <p className="text-xs">
               로그인 정보를 잊으셨다면, 아래 링크에서 새로운 비밀번호를 요청하실 수 있습니다. <br />
               전화번호 시작은 반드시 010-으로 시작해야 합니다.
             </p>
-            <Button type="submit" className="w-full">제출</Button>
+            <button className="w-full" onClick={onUserButtonClick}>확인</button>
           </div>
-
         </div>
       </div>
     </div>

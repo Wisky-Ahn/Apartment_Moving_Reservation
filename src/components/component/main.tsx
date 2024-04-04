@@ -4,15 +4,11 @@ import { Button } from "@/components/ui/button"
 import { CardTitle, CardHeader, CardContent, Card } from "@/components/ui/card"
 import { JSX, SVGProps } from "react"
 
-
 interface MainProps {
-  onCheckIconClick: () => void; // onCheckIconClick 속성을 정의합니다. 2024.03.24
-  onLoginButtonClick: () => void; // onLoginButtonClick 속성을 정의합니다.
-  onNoticeClick: () => void; // onNoticeClick 속성을 정의합니다.
+  onLoginButtonClick: () => void;
 }
 
-export function Main({ onCheckIconClick, onLoginButtonClick, onNoticeClick }: MainProps) {
-
+export function Main({onLoginButtonClick}: MainProps) {
   return (
     <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
@@ -32,8 +28,7 @@ export function Main({ onCheckIconClick, onLoginButtonClick, onNoticeClick }: Ma
         <Button className="flex-1" variant="outline">
           전날 예약
         </Button>
-        {/* 수정된 부분: 공지사항 버튼 클릭 시 공지사항 페이지로 이동하는 함수를 추가 */}
-        <Button className="flex-none" onClick={onNoticeClick}>공지사항</Button>
+        <Button className="flex-none">공지사항</Button>
       </div>
       <div className="mt-6">
         <h2 className="text-lg font-semibold">공지사항</h2>
@@ -45,6 +40,7 @@ export function Main({ onCheckIconClick, onLoginButtonClick, onNoticeClick }: Ma
           </div>
           <div className="border-t border-b py-4">
             <h3 className="text-md">1차 하자 신고 안내 및 방법</h3>
+            <p className="text-sm text-gray-600">하자 신고 절차 안내</p> {/* 추가된 내용 */}
             <p className="text-right text-sm text-gray-500">2023.10.10</p>
           </div>
         </div>
@@ -56,21 +52,17 @@ export function Main({ onCheckIconClick, onLoginButtonClick, onNoticeClick }: Ma
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
-              <CheckIcon onClick={onCheckIconClick} className="h-24 w-24 text-gray-700" />
+              <CheckIcon className="h-24 w-24 text-gray-700" />
             </div>
           </CardContent>
         </Card>
       </div>
-      {/* 수정된 부분: 로그인 버튼 클릭 시 로그인 페이지로 이동하는 함수를 추가 */}
-      <form method="post" action="/api/auth/callback/credentials">
-        <div className="mt-6 flex justify-center">
-          <Button onClick={onLoginButtonClick}>로그인</Button>
-        </div>
-      </form>
+      <div className="mt-6 flex justify-center">
+        <Button onClick={onLoginButtonClick}>로그인</Button>
+      </div>
     </div>
   )
 }
-
 
 function CheckIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
