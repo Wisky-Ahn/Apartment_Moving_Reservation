@@ -8,7 +8,7 @@ interface MainProps {
   onLoginButtonClick: () => void;
 }
 
-export function Main({onLoginButtonClick}: MainProps) {
+export function Main({ onLoginButtonClick }: MainProps) {
   return (
     <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
@@ -57,9 +57,11 @@ export function Main({onLoginButtonClick}: MainProps) {
           </CardContent>
         </Card>
       </div>
-      <div className="mt-6 flex justify-center">
-        <Button onClick={onLoginButtonClick}>로그인</Button>
-      </div>
+      <form method="post" action="/api/auth/callback/credentials">
+        <div className="mt-6 flex justify-center">
+          <Button type="submit">로그인</Button>
+        </div>
+      </form>
     </div>
   )
 }
