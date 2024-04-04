@@ -1,10 +1,8 @@
-import React from "react";
-import { Login } from "@/components/component/login";
+import { Login } from "@/components/component/login"
 
-export default function LoginWrapper() {
-  return (
-    <main>
-      <Login />
+
+export default function login(){ 
+    return <main>
+       <Login />
     </main>
-  );
 }

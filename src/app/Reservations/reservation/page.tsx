@@ -1,10 +1,10 @@
-import React from "react";
-import { Login } from "@/components/component/login";
+import { Reservation } from "@/components/component/reservation"
 
-export default function LoginWrapper() {
-  return (
-    <main>
-      <Login />
+
+
+
+export default function reservation(){ //default 해줘야함
+    return <main>
+        <Reservation />
     </main>
-  );
 }
