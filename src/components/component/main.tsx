@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { CardTitle, CardHeader, CardContent, Card } from "@/components/ui/card"
 import { JSX, SVGProps } from "react"
 
+
 interface MainProps {
   onCheckIconClick: () => void; // onCheckIconClick 속성을 정의합니다. 2024.03.24
   onLoginButtonClick: () => void; // onLoginButtonClick 속성을 정의합니다.
@@ -61,9 +62,11 @@ export function Main({ onCheckIconClick, onLoginButtonClick, onNoticeClick }: Ma
         </Card>
       </div>
       {/* 수정된 부분: 로그인 버튼 클릭 시 로그인 페이지로 이동하는 함수를 추가 */}
-      <div className="mt-6 flex justify-center">
-        <Button onClick={onLoginButtonClick}>로그인</Button>
-      </div>
+      <form method="post" action="/api/auth/callback/credentials">
+        <div className="mt-6 flex justify-center">
+          <Button onClick={onLoginButtonClick}>로그인</Button>
+        </div>
+      </form>
     </div>
   )
 }
