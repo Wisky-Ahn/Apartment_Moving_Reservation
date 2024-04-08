@@ -21,7 +21,6 @@ export const authOptions = {
           return null;
         }
 
-        // bcrypt.compare 대신 단순 문자열 비교를 사용합니다.
         if (credentials.password !== user.password) {
           console.log('비밀번호 틀림');
           return null;
@@ -33,7 +32,6 @@ export const authOptions = {
     })
   ],
 
-  // 세션 및 콜백 설정은 동일하게 유지됩니다.
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60
@@ -48,14 +46,21 @@ export const authOptions = {
       }
       return token;
     },
+
     session: async ({ session, token }) => {
       session.user = token.user;
       return session;
     },
+
+    // 로그인 성공 후 리디렉션을 처리하는 콜백 함수
+    async redirect({ url, baseUrl }) {
+      // 사용자를 /app/Mains 페이지로 리디렉션합니다.
+      return '/Mains';
+    },
   },
 
   adapter: MongoDBAdapter(connectDB),
-  secret: 'qwer1234'  
+  secret: 'qwer1234'
 };
 
 export default NextAuth(authOptions);
