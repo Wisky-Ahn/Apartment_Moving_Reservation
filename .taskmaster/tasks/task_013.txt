@@ -1,0 +1,115 @@
+# Task ID: 13
+# Title: 관리자 대시보드 레이아웃 개선
+# Status: done
+# Dependencies: 9, 10, 11
+# Priority: high
+# Description: 관리자 대시보드의 레이아웃을 개선하여 navbar와 sidebar가 겹치는 문제를 해결하고, 관리자 전용 sidebar에 내정보 탭을 추가하여 관리자 인터페이스의 사용성을 향상시킵니다.
+# Details:
+1. Navbar와 Sidebar 겹침 문제 해결:
+   - `/admin/dashboard` 경로에서 일반 사용자용 navbar 제거
+   - 관리자 페이지 레이아웃 컴포넌트 수정 (예: `components/admin/AdminLayout.js`)
+   - 조건부 렌더링을 통해 관리자 페이지에서는 navbar를 표시하지 않도록 수정
+   ```jsx
+   // 예시 코드
+   const Layout = ({ children }) => {
+     const router = useRouter();
+     const isAdminPage = router.pathname.startsWith('/admin');
+     
+     return (
+       <>
+         {!isAdminPage && <Navbar />}
+         <div className="content-container">
+           {isAdminPage && <AdminSidebar />}
+           <main>{children}</main>
+         </div>
+       </>
+     );
+   }
+   ```
+
+2. 관리자 전용 Sidebar 개선:
+   - 기존 sidebar 컴포넌트 분석 및 디자인 개선
+   - 반응형 디자인 적용 (모바일, 태블릿, 데스크톱 화면 크기 대응)
+   - 사이드바 접기/펼치기 기능 구현
+   - 활성 메뉴 항목 시각적 표시 개선
+   ```css
+   /* 반응형 디자인 예시 */
+   @media (max-width: 768px) {
+     .admin-sidebar {
+       width: 60px;
+     }
+     .admin-sidebar .menu-text {
+       display: none;
+     }
+   }
+   ```
+
+3. 관리자 계정 정보 표시 및 관리 기능 추가:
+   - Sidebar 상단 또는 하단에 관리자 프로필 섹션 추가
+   - NextAuth 세션에서 관리자 정보 가져와 표시
+   - 프로필 이미지, 이름, 역할 표시
+   - 드롭다운 메뉴로 계정 설정, 비밀번호 변경, 로그아웃 옵션 제공
+   ```jsx
+   // 관리자 프로필 컴포넌트 예시
+   const AdminProfile = () => {
+     const { data: session } = useSession();
+     
+     return (
+       <div className="admin-profile">
+         <Image src={session?.user?.image || "/default-avatar.png"} width={40} height={40} alt="Admin" />
+         <div className="admin-info">
+           <p className="admin-name">{session?.user?.name}</p>
+           <p className="admin-role">관리자</p>
+         </div>
+         <div className="admin-dropdown">
+           <button>내 정보 관리</button>
+           <button>비밀번호 변경</button>
+           <button onClick={() => signOut()}>로그아웃</button>
+         </div>
+       </div>
+     );
+   }
+   ```
+
+4. 내정보 탭 구현:
+   - 관리자 sidebar에 "내정보" 메뉴 항목 추가
+   - 관리자 계정 정보 조회 및 수정 페이지 구현
+   - 관리자 권한 수준에 따른 접근 제어 구현
+   - 프로필 정보 업데이트 기능 구현 (이름, 이메일, 프로필 이미지 등)
+
+5. 전체 레이아웃 일관성 확보:
+   - 관리자 페이지 전반의 스타일 통일성 확인
+   - 색상, 폰트, 간격 등의 디자인 시스템 적용
+   - 다크모드/라이트모드 지원 고려
+
+# Test Strategy:
+1. 레이아웃 겹침 문제 해결 테스트:
+   - `/admin/dashboard` 경로로 접속하여 navbar와 sidebar가 겹치지 않는지 확인
+   - 개발자 도구를 사용하여 DOM 구조 검사, navbar 요소가 관리자 페이지에서 제거되었는지 확인
+   - 다양한 화면 크기(모바일, 태블릿, 데스크톱)에서 레이아웃이 올바르게 표시되는지 확인
+
+2. 관리자 전용 Sidebar 기능 테스트:
+   - 모든 메뉴 항목이 올바른 페이지로 연결되는지 확인
+   - 현재 활성화된 메뉴 항목이 시각적으로 구분되는지 확인
+   - 반응형 디자인 테스트: 화면 크기 변경 시 sidebar가 적절히 조정되는지 확인
+   - 사이드바 접기/펼치기 기능이 정상 작동하는지 확인
+
+3. 관리자 계정 정보 표시 테스트:
+   - 로그인한 관리자의 정보(이름, 이메일, 프로필 이미지 등)가 올바르게 표시되는지 확인
+   - 드롭다운 메뉴가 정상적으로 열리고 닫히는지 확인
+   - 각 메뉴 항목(내 정보 관리, 비밀번호 변경, 로그아웃 등)이 올바르게 작동하는지 확인
+
+4. 내정보 탭 기능 테스트:
+   - 내정보 탭 클릭 시 관리자 프로필 페이지로 이동하는지 확인
+   - 프로필 정보 수정 기능이 정상 작동하는지 테스트
+   - 잘못된 입력에 대한 유효성 검사가 작동하는지 확인
+   - 변경사항이 저장되고 UI에 즉시 반영되는지 확인
+
+5. 크로스 브라우저 테스트:
+   - Chrome, Firefox, Safari, Edge 등 주요 브라우저에서 레이아웃이 일관되게 표시되는지 확인
+   - 모바일 브라우저에서도 정상 작동하는지 확인
+
+6. 접근성 테스트:
+   - 키보드 탐색이 가능한지 확인
+   - 스크린 리더 호환성 테스트
+   - 색상 대비가 적절한지 확인
