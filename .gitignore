@@ -112,6 +112,9 @@ jspm_packages/
 # TaskMaster (선택적 - 프로젝트에 따라)
 # .taskmaster/
 
+# Cursor IDE settings
+.cursor/
+
 # Temporary files
 *.tmp
 *.temp
