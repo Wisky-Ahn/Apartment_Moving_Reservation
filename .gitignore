@@ -121,3 +121,5 @@ backend/app.db
 backend/test.db
 backend/alembic/versions/*.py
 !backend/alembic/versions/__init__.py
+
+/src/generated/prisma
