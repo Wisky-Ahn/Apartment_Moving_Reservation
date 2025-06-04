@@ -2,12 +2,15 @@
 
 /**
  * 회원가입 페이지
- * 사용자 등록 폼과 유효성 검증, API 연동 기능
+ * 일반 사용자 및 관리자 회원가입 기능
  */
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 
 // 폼 데이터 타입 정의
 interface RegisterFormData {
@@ -16,6 +19,9 @@ interface RegisterFormData {
   password: string
   confirmPassword: string
   name: string
+  phone: string
+  apartment_number: string
+  isAdmin: boolean
 }
 
 // 에러 상태 타입 정의
@@ -25,6 +31,8 @@ interface FormErrors {
   password?: string
   confirmPassword?: string
   name?: string
+  phone?: string
+  apartment_number?: string
   general?: string
 }
 
@@ -38,12 +46,15 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    name: ""
+    name: "",
+    phone: "",
+    apartment_number: "",
+    isAdmin: false
   })
   
   const [errors, setErrors] = useState<FormErrors>({})
   const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [isSuccess, setIsSuccess] = useState<string | null>(null)
 
   // 이미 로그인된 사용자는 홈으로 리다이렉트
   if (session) {
@@ -68,6 +79,16 @@ export default function RegisterPage() {
         [name]: undefined
       }))
     }
+  }
+
+  /**
+   * 관리자 체크박스 변경 핸들러
+   */
+  const handleAdminCheckChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      isAdmin: checked
+    }))
   }
 
   /**
@@ -129,9 +150,12 @@ export default function RegisterPage() {
 
     setIsLoading(true)
     setErrors({})
+    setIsSuccess(null)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/register`, {
+      const endpoint = formData.isAdmin ? '/api/users/register-admin' : '/api/users/register'
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +164,9 @@ export default function RegisterPage() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          name: formData.name
+          name: formData.name,
+          phone: formData.phone || null,
+          apartment_number: formData.apartment_number || null
         }),
       })
 
@@ -155,11 +181,14 @@ export default function RegisterPage() {
         return
       }
 
-      // 성공 시
-      setIsSuccess(true)
-      setTimeout(() => {
-        router.push("/login?message=registration_success")
-      }, 2000)
+      if (formData.isAdmin) {
+        setIsSuccess("관리자 계정 신청이 완료되었습니다. 슈퍼관리자의 승인을 기다려주세요.")
+      } else {
+        setIsSuccess("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.")
+        setTimeout(() => {
+          router.push("/login?message=registration_success")
+        }, 2000)
+      }
 
     } catch (error) {
       console.error('회원가입 오류:', error)
@@ -215,24 +244,16 @@ export default function RegisterPage() {
           )}
 
           <div className="space-y-4">
-            {/* 이름 입력 */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                이름 *
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={handleInputChange}
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.name ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                placeholder="홍길동"
+            {/* 관리자 계정 여부 */}
+            <div className="flex items-center space-x-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <Checkbox 
+                id="admin-account"
+                checked={formData.isAdmin}
+                onCheckedChange={handleAdminCheckChange}
               />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+              <label htmlFor="admin-account" className="text-sm font-medium text-blue-900">
+                관리자 계정으로 신청 (슈퍼관리자 승인 필요)
+              </label>
             </div>
 
             {/* 사용자명 입력 */}
@@ -240,7 +261,7 @@ export default function RegisterPage() {
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 사용자명 *
               </label>
-              <input
+              <Input
                 id="username"
                 name="username"
                 type="text"
@@ -260,7 +281,7 @@ export default function RegisterPage() {
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 이메일 *
               </label>
-              <input
+              <Input
                 id="email"
                 name="email"
                 type="email"
@@ -275,12 +296,70 @@ export default function RegisterPage() {
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
 
+            {/* 이름 입력 */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                이름 *
+              </label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={handleInputChange}
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.name ? 'border-red-300' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                placeholder="홍길동"
+              />
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+            </div>
+
+            {/* 전화번호 입력 */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                전화번호
+              </label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.phone ? 'border-red-300' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                placeholder="전화번호를 입력하세요 (선택사항)"
+              />
+              {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+            </div>
+
+            {/* 아파트 호수 입력 */}
+            <div>
+              <label htmlFor="apartment_number" className="block text-sm font-medium text-gray-700">
+                아파트 호수
+              </label>
+              <Input
+                id="apartment_number"
+                name="apartment_number"
+                type="text"
+                value={formData.apartment_number}
+                onChange={handleInputChange}
+                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
+                  errors.apartment_number ? 'border-red-300' : 'border-gray-300'
+                } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                placeholder="예: 101동 1001호 (선택사항)"
+              />
+              {errors.apartment_number && <p className="mt-1 text-sm text-red-600">{errors.apartment_number}</p>}
+            </div>
+
             {/* 비밀번호 입력 */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 비밀번호 *
               </label>
-              <input
+              <Input
                 id="password"
                 name="password"
                 type="password"
@@ -300,7 +379,7 @@ export default function RegisterPage() {
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 비밀번호 확인 *
               </label>
-              <input
+              <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
@@ -317,14 +396,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
-              disabled={isLoading}
               className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
                 isLoading 
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
               }`}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>
@@ -337,7 +416,7 @@ export default function RegisterPage() {
               ) : (
                 '회원가입'
               )}
-            </button>
+            </Button>
           </div>
 
           <div className="text-center">

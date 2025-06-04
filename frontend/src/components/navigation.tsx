@@ -48,9 +48,9 @@ export function Navigation() {
                 홈
               </button>
               <button
-                onClick={() => router.push('/reservations')}
+                onClick={() => router.push('/Reservations/reservations')}
                 className={`${
-                  pathname === '/reservations' 
+                  pathname.includes('/Reservations') 
                     ? 'border-blue-500 text-gray-900' 
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
@@ -58,9 +58,9 @@ export function Navigation() {
                 예약
               </button>
               <button
-                onClick={() => router.push('/notices')}
+                onClick={() => router.push('/Notices/notices')}
                 className={`${
-                  pathname === '/notices' 
+                  pathname.includes('/Notices') 
                     ? 'border-blue-500 text-gray-900' 
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}

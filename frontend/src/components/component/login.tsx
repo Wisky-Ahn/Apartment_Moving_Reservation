@@ -8,8 +8,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AuthService } from '../../../lib/services/auth';
-import type { LoginRequest } from '../../../lib/services/auth';
+import { AuthService } from '@/lib/services/auth';
+import type { LoginRequest } from '@/lib/services/auth';
 
 interface LoginProps {
   onCloseButtonClick?: () => void;

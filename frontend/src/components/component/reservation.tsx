@@ -13,8 +13,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { TableHead, TableRow, TableHeader, TableBody, Table, TableCell } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { JSX, SVGProps } from "react"
-import { ReservationService } from '../../../lib/services/reservations';
-import type { CreateReservationRequest, Reservation } from '../../../lib/services/reservations';
+import { ReservationService } from '@/lib/services/reservations';
+import type { CreateReservationRequest, Reservation } from '@/lib/services/reservations';
 
 interface TimeSlot {
   id: string;
