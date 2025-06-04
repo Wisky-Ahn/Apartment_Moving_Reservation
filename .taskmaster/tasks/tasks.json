@@ -193,7 +193,7 @@
       "id": 6,
       "title": "API 에러 처리 및 검증 강화",
       "description": "모든 API 엔드포인트의 에러 처리 및 데이터 검증 강화",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "dependencies": [
         2,
@@ -203,7 +203,89 @@
       "updatedAt": "2024-12-18T00:00:00Z",
       "details": "체계적인 예외 처리, 입력 데이터 검증, 사용자 친화적 에러 메시지 구현",
       "testStrategy": "잘못된 입력값, 권한 오류, 서버 오류 등 다양한 에러 시나리오 테스트",
-      "subtasks": []
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "프론트엔드 에러 처리 개선",
+          "description": "프론트엔드에서 API 에러를 효과적으로 처리하고 사용자에게 적절한 피드백을 제공하는 메커니즘 구현",
+          "dependencies": [],
+          "details": "1. 전역 에러 핸들러 구현 (axios interceptor 또는 fetch wrapper)\n2. HTTP 상태 코드별 에러 처리 로직 구현\n3. 사용자 친화적인 에러 메시지 표시 컴포넌트 개발\n4. 네트워크 연결 문제 감지 및 자동 재시도 메커니즘 구현\n5. 폼 검증 실패 시 인라인 에러 메시지 표시 기능 개선",
+          "status": "done",
+          "testStrategy": "다양한 에러 시나리오에 대한 단위 테스트 및 사용자 인터페이스 테스트 수행. 네트워크 지연 및 오프라인 상태에서의 동작 테스트."
+        },
+        {
+          "id": 2,
+          "title": "API 응답 형식 표준화",
+          "description": "모든 API 엔드포인트의 응답 형식을 일관되게 표준화하여 클라이언트 측 처리를 단순화",
+          "dependencies": [],
+          "details": "1. 성공 및 실패 응답에 대한 표준 JSON 구조 정의\n2. 에러 코드 체계 수립 (비즈니스 로직, 검증, 권한 등 카테고리별)\n3. 모든 API 컨트롤러에 표준 응답 래퍼 적용\n4. 페이지네이션, 정렬, 필터링에 대한 표준 응답 형식 구현\n5. API 문서에 표준 응답 형식 반영",
+          "status": "done",
+          "testStrategy": "각 엔드포인트가 표준 응답 형식을 준수하는지 확인하는 통합 테스트 작성. 다양한 에러 상황에서 일관된 응답 구조 검증."
+        },
+        {
+          "id": 3,
+          "title": "에러 로깅 시스템 구축",
+          "description": "애플리케이션 전반의 에러를 체계적으로 수집, 분류, 저장하는 로깅 시스템 구현",
+          "dependencies": [],
+          "details": "✅ 완료됨: 구조화된 로그 형식 (JSON), 로그 레벨별 처리 로직, 보안 필터링, 파일 및 콘솔 핸들러, API 요청/응답 자동 로깅 미들웨어, 중요 에러 발생 시 이메일/Slack/웹훅 알림 시스템",
+          "status": "done",
+          "testStrategy": "다양한 에러 시나리오에서 로그가 올바르게 생성되고 저장되는지 확인. 알림 시스템 작동 여부 테스트."
+        },
+        {
+          "id": 4,
+          "title": "입력 데이터 검증 강화",
+          "description": "모든 API 엔드포인트에 대한 입력 데이터 검증 로직 강화 및 표준화",
+          "dependencies": [],
+          "details": "✅ 완료됨: 고급 검증기 시스템(SecurityValidator, BusinessRuleValidator, NetworkValidator, DataTypeValidator), 검증 미들웨어(ValidationMiddleware), API별 특화 검증(APIValidationExtensions), SQL 인젝션/XSS 방지, 비즈니스 로직 검증, 중복 검사 등 포함",
+          "status": "done",
+          "testStrategy": "다양한 유효/무효 입력 데이터로 각 엔드포인트 테스트. 경계값 테스트 및 악의적 입력 테스트 수행."
+        },
+        {
+          "id": 5,
+          "title": "데이터베이스 예외 처리 개선",
+          "description": "데이터베이스 작업 관련 예외를 체계적으로 처리하고 적절한 사용자 피드백 제공",
+          "dependencies": [],
+          "details": "✅ 완료됨: 데이터베이스 예외 처리 시스템(DatabaseErrorMapper, DatabaseExceptionHandler), 트랜잭션 관리 시스템(TransactionManager, @transactional 데코레이터), PostgreSQL/SQLAlchemy 에러 매핑, 사용자 친화적 메시지 변환, 자동 롤백 메커니즘, 세이브포인트 관리 포함",
+          "status": "done",
+          "testStrategy": "다양한 데이터베이스 예외 상황을 시뮬레이션하여 처리 로직 테스트. 트랜잭션 롤백 테스트 및 데이터 일관성 검증."
+        },
+        {
+          "id": 6,
+          "title": "API 성능 모니터링 및 에러 분석 도구 구현",
+          "description": "API 성능 및 에러 패턴을 모니터링하고 분석할 수 있는 도구 구현",
+          "dependencies": [],
+          "details": "1. API 호출 성능 메트릭 수집 (응답 시간, 처리량, 에러율)\n2. 에러 발생 패턴 분석 및 시각화 대시보드 구현\n3. 반복적인 에러 패턴 자동 감지 기능 구현\n4. 성능 병목 현상 식별 도구 개발\n5. 정기적인 에러 보고서 생성 자동화\n<info added on 2025-06-04T06:03:03.829Z>\n# API 성능 모니터링 및 에러 분석 도구 구현 완료\n\n## 구현된 기능들:\n\n### 1. 성능 메트릭 수집 미들웨어 (`backend/app/middleware/performance.py`)\n- **PerformanceMetrics 클래스**: 실시간 성능 데이터 수집 및 분석\n- **메트릭 데이터**: 응답 시간, 처리량, 에러율, 엔드포인트별 통계\n- **메모리 기반 시간 윈도우**: 최근 1시간 데이터 저장 (3600초)\n- **실시간 통계**: 활성 요청 수, 총 요청 수, 에러 수\n- **엔드포인트별 통계**: 각 API 엔드포인트의 상세 성능 메트릭\n- **에러 패턴 분석**: 반복되는 에러 패턴 및 빈도 추적\n\n### 2. 이상 징후 감지 시스템\n- **높은 에러율 감지**: 30% 이상 에러율 시 critical 알림\n- **느린 응답 시간 감지**: 평균 2초 초과 시 warning 알림  \n- **반복 에러 패턴 감지**: 5분 내 5회 이상 동일 에러 발생 시 경고\n- **자동 이상 징후 분류**: critical/warning/info 심각도 분류\n\n### 3. 모니터링 API 엔드포인트 (`backend/app/api/monitoring.py`)\n- **GET /monitoring/health**: 서비스 헬스 체크 및 기본 성능 요약\n- **GET /monitoring/stats**: 실시간 성능 통계 조회\n- **GET /monitoring/endpoints**: 엔드포인트별 상세 성능 분석  \n- **GET /monitoring/errors**: 에러 패턴 분석 결과\n- **GET /monitoring/anomalies**: 현재 감지된 이상 징후 목록\n\n### 4. 메인 애플리케이션 통합 (`backend/app/main.py`)\n- 성능 모니터링 미들웨어를 메인 FastAPI 애플리케이션에 통합\n- 모니터링 라우터를 API 엔드포인트에 추가\n- 요청별 고유 ID 생성 및 추적\n\n### 5. 강화된 로깅 및 에러 추적\n- 요청별 상세 로깅 (시작/완료/에러)\n- 예외 상황 자동 메트릭 수집\n- 사용자 에이전트, 클라이언트 IP 등 컨텍스트 정보 수집\n\n## 기술적 특징:\n- **메모리 효율성**: deque를 사용한 제한된 메모리 사용\n- **쓰레드 안전성**: Lock을 사용한 동시성 처리\n- **고성능**: 비동기 처리로 최소한의 오버헤드\n- **확장성**: 새로운 메트릭 쉽게 추가 가능\n- **모듈성**: 독립적인 컴포넌트로 설계\n\n## 해결된 이슈:\n- Pydantic 2.x 호환성 문제 해결\n- 순환 임포트 문제 해결 (임시 인증 제거)\n- 린터 오류 모두 수정\n</info added on 2025-06-04T06:03:03.829Z>",
+          "status": "done",
+          "testStrategy": "실제 트래픽 데이터로 모니터링 시스템 정확도 검증. 다양한 부하 상황에서 성능 메트릭 수집 정확성 테스트."
+        },
+        {
+          "id": 7,
+          "title": "백엔드 전역 예외 처리 미들웨어",
+          "description": "전역 예외 처리 시스템과 커스텀 예외 클래스 구현 완료",
+          "details": "✅ 완료됨: ErrorCode 열거형, 커스텀 예외 클래스들(AppException, AuthenticationException, ValidationException 등), 전역 예외 핸들러 구현",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        },
+        {
+          "id": 8,
+          "title": "데이터 검증 스키마 강화",
+          "description": "사용자 및 예약 스키마의 검증 로직 강화 완료",
+          "details": "✅ 완료됨: 사용자 스키마 - 비밀번호 복잡성, 전화번호/아파트번호 형식, 예약된 사용자명 검사; 예약 스키마 - 비즈니스 로직 검증, 근무시간/주말 제한, 시간 슬롯 검증",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        },
+        {
+          "id": 9,
+          "title": "권한 및 인증 에러 처리 강화",
+          "description": "인증 의존성 시스템과 권한 검사 로직 구현 완료",
+          "details": "✅ 완료됨: JWT Bearer 토큰 스키마, 사용자 인증 의존성(get_current_user_token), 권한 확인 함수들(get_current_admin_user, get_current_super_admin_user), 권한 검사 헬퍼 함수들, 사용자 API에 새로운 예외 시스템 적용",
+          "status": "done",
+          "dependencies": [],
+          "parentTaskId": 6
+        }
+      ]
     },
     {
       "id": 7,
