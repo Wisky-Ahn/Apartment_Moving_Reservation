@@ -23,6 +23,11 @@ export function Navigation() {
     return null
   }
 
+  // 관리자 페이지에서는 네비게이션을 숨김 (AdminLayout의 sidebar와 겹침 방지)
+  if (pathname.startsWith('/admin')) {
+    return null
+  }
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

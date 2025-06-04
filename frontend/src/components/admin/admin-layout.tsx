@@ -17,7 +17,8 @@ import {
   BarChart3, 
   Settings,
   LogOut,
-  Home
+  Home,
+  User
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -62,6 +63,12 @@ const navigationItems: NavigationItem[] = [
     icon: BarChart3,
     description: '이용 현황 분석'
   },
+  {
+    name: '내 정보',
+    href: '/admin/profile',
+    icon: User,
+    description: '관리자 계정 관리'
+  },
 ];
 
 /**
@@ -92,8 +99,31 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <h1 className="text-xl font-bold text-blue-600">FNM 관리자</h1>
         </div>
 
+        {/* 관리자 프로필 섹션 */}
+        <div className="px-4 py-4 border-b bg-gray-50">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src="" />
+              <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                {session?.user?.name?.slice(0, 2) || 'AD'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {session?.user?.name || '관리자'}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {session?.user?.email || 'admin@fnm.com'}
+              </p>
+              <p className="text-xs text-blue-600 font-medium">
+                시스템 관리자
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* 네비게이션 메뉴 */}
-        <nav className="mt-8 px-4">
+        <nav className="mt-4 px-4">
           <ul className="space-y-2">
             {navigationItems.map((item) => {
               const Icon = item.icon;
