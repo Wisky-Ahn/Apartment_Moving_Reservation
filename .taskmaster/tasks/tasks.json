@@ -178,7 +178,7 @@
       "id": 5,
       "title": "NextAuth PostgreSQL 어댑터 설정",
       "description": "NextAuth와 PostgreSQL 데이터베이스 연동 설정",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "dependencies": [
         4
@@ -235,6 +235,48 @@
       "details": "SQL 쿼리 최적화, Redis 캐싱, API 응답 시간 개선",
       "testStrategy": "부하 테스트 및 응답 시간 측정",
       "subtasks": []
+    },
+    {
+      "id": 9,
+      "title": "프로젝트 디렉토리 구조 리팩토링",
+      "description": "frontend/와 backend/ 디렉토리로 명확히 분리하여 프로젝트 구조 개선",
+      "status": "pending",
+      "priority": "high",
+      "dependencies": [5],
+      "createdAt": "2024-12-18T00:00:00Z",
+      "updatedAt": "2024-12-18T00:00:00Z",
+      "subtasks": [
+        {
+          "id": "9.1",
+          "title": "frontend 디렉토리 생성 및 Next.js 파일 이동",
+          "description": "src/, lib/, components/, package.json 등 프론트엔드 파일들을 frontend/ 디렉토리로 이동",
+          "status": "pending"
+        },
+        {
+          "id": "9.2", 
+          "title": "import 경로 및 설정 파일 수정",
+          "description": "이동된 파일들의 import 경로와 next.config.js, tsconfig.json 등 설정 파일 경로 수정",
+          "status": "pending"
+        },
+        {
+          "id": "9.3",
+          "title": "환경 변수 및 스크립트 경로 업데이트",
+          "description": ".env.local, package.json scripts, API 호출 경로 등 업데이트",
+          "status": "pending"
+        },
+        {
+          "id": "9.4",
+          "title": "Docker 및 배포 설정 수정",
+          "description": "docker-compose.yml, Dockerfile 등 배포 관련 설정을 새 구조에 맞게 수정",
+          "status": "pending"
+        },
+        {
+          "id": "9.5",
+          "title": "README 및 문서 업데이트",
+          "description": "프로젝트 구조 변경에 따른 설명서 및 실행 방법 업데이트",
+          "status": "pending"
+        }
+      ]
     }
   ]
 }

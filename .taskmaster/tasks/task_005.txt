@@ -1,6 +1,6 @@
 # Task ID: 5
 # Title: NextAuth PostgreSQL 어댑터 설정
-# Status: pending
+# Status: done
 # Dependencies: 4
 # Priority: medium
 # Description: NextAuth와 PostgreSQL 데이터베이스 연동 설정

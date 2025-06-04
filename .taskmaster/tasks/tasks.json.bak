@@ -178,7 +178,7 @@
       "id": 5,
       "title": "NextAuth PostgreSQL 어댑터 설정",
       "description": "NextAuth와 PostgreSQL 데이터베이스 연동 설정",
-      "status": "pending",
+      "status": "done",
       "priority": "medium",
       "dependencies": [
         4
@@ -209,7 +209,7 @@
       "id": 7,
       "title": "관리자 대시보드 기능 완성",
       "description": "관리자 페이지의 예약 관리 및 통계 기능 구현",
-      "status": "pending",
+      "status": "in-progress",
       "priority": "medium",
       "dependencies": [
         4
