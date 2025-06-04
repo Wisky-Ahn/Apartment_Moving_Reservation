@@ -1,0 +1,2 @@
+reword a8cc83f feat: TaskMaster Task 9 완료 - 프로젝트 구조 리팩토링
+pick 1e84e62 cleanup: 루트 레벨에서 프론트엔드 파일들 정리
