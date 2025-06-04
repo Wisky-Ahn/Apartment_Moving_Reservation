@@ -6,29 +6,32 @@ import { JSX, SVGProps } from "react"
 
 interface MainProps {
   onLoginButtonClick: () => void;
+  onReservationClick?: () => void;
+  onNoticeClick?: () => void;
+  onUserClick?: () => void;
 }
 
-export function Main({ onLoginButtonClick }: MainProps) {
+export function Main({ onLoginButtonClick, onReservationClick, onNoticeClick, onUserClick }: MainProps) {
   return (
     <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-blue-600">FNM</h1>
-        <Avatar>
+        <Avatar onClick={onUserClick} className="cursor-pointer">
           <AvatarImage alt="Profile" src="/placeholder.svg?height=32&width=32" />
           <AvatarFallback>U</AvatarFallback>
         </Avatar>
       </div>
       <div className="mt-8 flex justify-between space-x-4">
-        <Button className="flex-1" variant="outline">
+        <Button className="flex-1" variant="outline" onClick={onReservationClick}>
           오늘 예약
         </Button>
-        <Button className="flex-1" variant="outline">
+        <Button className="flex-1" variant="outline" onClick={onReservationClick}>
           내일 예약
         </Button>
-        <Button className="flex-1" variant="outline">
+        <Button className="flex-1" variant="outline" onClick={onReservationClick}>
           전날 예약
         </Button>
-        <Button className="flex-none">공지사항</Button>
+        <Button className="flex-none" onClick={onNoticeClick}>공지사항</Button>
       </div>
       <div className="mt-6">
         <h2 className="text-lg font-semibold">공지사항</h2>
@@ -40,13 +43,13 @@ export function Main({ onLoginButtonClick }: MainProps) {
           </div>
           <div className="border-t border-b py-4">
             <h3 className="text-md">1차 하자 신고 안내 및 방법</h3>
-            <p className="text-sm text-gray-600">하자 신고 절차 안내</p> {/* 추가된 내용 */}
+            <p className="text-sm text-gray-600">하자 신고 절차 안내</p>
             <p className="text-right text-sm text-gray-500">2023.10.10</p>
           </div>
         </div>
       </div>
       <div className="mt-6 grid grid-cols-1 gap-4">
-        <Card className="w-full">
+        <Card className="w-full cursor-pointer" onClick={onReservationClick}>
           <CardHeader>
             <CardTitle>이사 예약/확인</CardTitle>
           </CardHeader>
@@ -57,11 +60,9 @@ export function Main({ onLoginButtonClick }: MainProps) {
           </CardContent>
         </Card>
       </div>
-      <form method="post" action="/api/auth/callback/credentials">
-        <div className="mt-6 flex justify-center">
-          <Button type="submit">로그인</Button>
-        </div>
-      </form>
+      <div className="mt-6 flex justify-center">
+        <Button onClick={onLoginButtonClick}>로그인</Button>
+      </div>
     </div>
   )
 }
