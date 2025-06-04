@@ -38,9 +38,13 @@ def get_db():
 def init_db():
     """
     데이터베이스 초기화
-    테이블 생성 및 초기 데이터 설정
+    기존 테이블을 삭제하고 새로 생성
     """
-    # 모든 테이블 생성
+    # 기존 테이블 모두 삭제 (개발용)
+    Base.metadata.drop_all(bind=engine)
+    print("🗑️ 기존 데이터베이스 테이블이 삭제되었습니다.")
+    
+    # 모든 테이블 새로 생성
     Base.metadata.create_all(bind=engine)
     print("✅ 데이터베이스 테이블이 생성되었습니다.")
 

@@ -8,9 +8,10 @@ from fastapi.responses import JSONResponse
 import logging
 
 from app.core.config import settings
-from app.db.database import init_db
+from app.db.database import init_db, get_db
+from app.crud.user import get_super_admin, create_super_admin
 # API 라우터 import
-from app.api import users, reservations, notices
+from app.api import users, reservations, notices, statistics
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -50,12 +51,41 @@ def create_application() -> FastAPI:
     app.include_router(users.router)
     app.include_router(reservations.router)
     app.include_router(notices.router)
+    app.include_router(statistics.router, prefix="/api/statistics", tags=["Statistics"])
     
     return app
 
 
 # FastAPI 앱 인스턴스 생성
 app = create_application()
+
+
+def create_super_admin_if_not_exists():
+    """
+    슈퍼관리자가 존재하지 않으면 생성하는 함수
+    """
+    try:
+        db = next(get_db())
+        
+        # 슈퍼관리자 존재 확인
+        super_admin = get_super_admin(db)
+        if not super_admin:
+            # 슈퍼관리자 생성
+            create_super_admin(
+                db=db,
+                username="superadmin",
+                email="superadmin@fnm.com",
+                password="allapt322410@",
+                name="시스템관리자"
+            )
+            logger.info("✅ 슈퍼관리자 계정이 생성되었습니다 (superadmin/allapt322410@)")
+        else:
+            logger.info("✅ 슈퍼관리자 계정이 이미 존재합니다")
+            
+    except Exception as e:
+        logger.error(f"❌ 슈퍼관리자 생성 실패: {e}")
+    finally:
+        db.close()
 
 
 @app.on_event("startup")
@@ -73,6 +103,10 @@ async def startup_event():
     try:
         init_db()
         logger.info("✅ 데이터베이스 초기화 완료")
+        
+        # 슈퍼관리자 생성
+        create_super_admin_if_not_exists()
+        
     except Exception as e:
         logger.error(f"❌ 데이터베이스 초기화 실패: {e}")
 
