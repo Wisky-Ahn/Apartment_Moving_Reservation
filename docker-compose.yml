@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 데이터베이스
+  postgres:
+    image: postgres:15
+    container_name: fnm-postgres
+    environment:
+      POSTGRES_DB: fnm_db
+      POSTGRES_USER: fnmuser
+      POSTGRES_PASSWORD: fnmpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fnm-network
+
+  # FastAPI 백엔드
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fnm-backend
+    environment:
+      - DATABASE_URL=postgresql://fnmuser:fnmpassword@postgres:5432/fnm_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+    networks:
+      - fnm-network
+
+  # Next.js 프론트엔드
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fnm-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=your-secret-key-change-this-in-production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - fnm-network
+
+volumes:
+  postgres_data:
+
+networks:
+  fnm-network:
+    driver: bridge 
