@@ -3,7 +3,7 @@
 환경변수 및 기본 설정을 관리
 """
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List, Union
 
 class Settings(BaseSettings):
     """
@@ -30,6 +30,26 @@ class Settings(BaseSettings):
     # 페이지네이션 설정
     DEFAULT_PAGE_SIZE: int = 10
     MAX_PAGE_SIZE: int = 100
+    
+    # 알림 시스템 설정
+    # 이메일 알림 설정
+    SMTP_SERVER: Optional[str] = None
+    SMTP_PORT: Optional[int] = None
+    SMTP_USERNAME: Optional[str] = None
+    SMTP_PASSWORD: Optional[str] = None
+    ALERT_EMAIL_FROM: Optional[str] = None
+    ALERT_EMAIL_TO: Optional[Union[str, List[str]]] = None
+    
+    # Slack 알림 설정
+    SLACK_WEBHOOK_URL: Optional[str] = None
+    SLACK_CHANNEL: Optional[str] = None
+    
+    # 웹훅 알림 설정
+    ALERT_WEBHOOK_URL: Optional[str] = None
+    ALERT_WEBHOOK_HEADERS: Optional[dict] = None
+    
+    # 알림 레벨 설정 (LOW, MEDIUM, HIGH, CRITICAL)
+    ALERT_LEVELS: str = "HIGH,CRITICAL"
     
     class Config:
         env_file = ".env"

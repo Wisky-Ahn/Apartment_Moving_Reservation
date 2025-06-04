@@ -8,4 +8,8 @@ passlib[bcrypt]==1.7.4
 python-dotenv==1.0.0
 pydantic==2.8.2
 pydantic-settings==2.4.0
-email-validator==2.1.0 
+email-validator==2.1.0
+# 알림 시스템 의존성
+aiohttp==3.9.1
+# 검증 시스템 의존성
+bleach==6.1.0 
