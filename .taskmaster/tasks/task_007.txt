@@ -1,0 +1,11 @@
+# Task ID: 7
+# Title: 관리자 대시보드 기능 완성
+# Status: pending
+# Dependencies: 4
+# Priority: medium
+# Description: 관리자 페이지의 예약 관리 및 통계 기능 구현
+# Details:
+예약 현황 대시보드, 통계 차트, 사용자 관리 기능 완성
+
+# Test Strategy:
+관리자 권한으로 모든 관리 기능 정상 동작 확인

@@ -1,0 +1,11 @@
+# Task ID: 5
+# Title: NextAuth PostgreSQL 어댑터 설정
+# Status: pending
+# Dependencies: 4
+# Priority: medium
+# Description: NextAuth와 PostgreSQL 데이터베이스 연동 설정
+# Details:
+NextAuth PostgreSQL 어댑터 설치 및 설정하여 세션 관리를 데이터베이스와 동기화
+
+# Test Strategy:
+로그인/로그아웃 후 데이터베이스 세션 테이블 확인

@@ -1,0 +1,37 @@
+# Task ID: 3
+# Title: 공지사항 API 라우터 구현
+# Status: done
+# Dependencies: 1
+# Priority: medium
+# Description: 공지사항 관리를 위한 모든 API 엔드포인트 구현
+# Details:
+/api/notices 경로의 CRUD 작업과 중요공지/상단고정 기능 구현
+
+# Test Strategy:
+공지사항 작성, 조회, 수정, 삭제 및 필터링 기능 테스트
+
+# Subtasks:
+## 3.1. 공지사항 API 라우터 파일 생성 [done]
+### Dependencies: None
+### Description: backend/app/api/notices.py 파일 생성
+### Details:
+FastAPI APIRouter 설정 및 기본 구조 생성
+
+## 3.2. 공지사항 CRUD API 구현 [done]
+### Dependencies: None
+### Description: 공지사항 생성, 조회, 수정, 삭제 엔드포인트 구현
+### Details:
+관리자 전용 작성/수정/삭제, 전체 사용자 조회 기능
+
+## 3.3. 공지사항 스키마 완성 [done]
+### Dependencies: None
+### Description: notices 관련 Pydantic 스키마 구현
+### Details:
+backend/app/schemas/notice.py 파일 생성
+
+## 3.4. 공지사항 필터링 기능 [done]
+### Dependencies: None
+### Description: 유형별, 중요도별 공지사항 필터링 구현
+### Details:
+쿼리 파라미터를 통한 동적 필터링
+
