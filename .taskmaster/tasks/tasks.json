@@ -636,6 +636,22 @@
       ],
       "priority": "high",
       "subtasks": []
+    },
+    {
+      "id": 14,
+      "title": "CRUD 테스트 및 모니터링 시스템 구축",
+      "description": "API 상태 실시간 모니터링 대시보드와 CRUD 테스트 환경을 구축하여 시스템 안정성을 확보하고 성능 문제의 재발을 방지하는 종합적인 테스트 및 모니터링 시스템을 개발합니다.",
+      "details": "1. 실시간 모니터링 대시보드 구축:\n   - WebSocket 또는 Server-Sent Events를 활용한 실시간 데이터 스트리밍 구현\n   - API 응답시간, 에러율, 성공률 등 핵심 지표 시각화 컴포넌트 개발\n   - 대시보드 레이아웃 및 UI 설계 (차트, 그래프, 상태 표시기 등)\n   ```jsx\n   // WebSocket 연결 예시 코드\n   const socket = new WebSocket('ws://your-api-endpoint/monitoring');\n   socket.onmessage = (event) => {\n     const data = JSON.parse(event.data);\n     updateDashboardMetrics(data);\n   };\n   ```\n\n2. Mock/Real API 토글 기능 구현:\n   - API 요청 인터셉터 구현 (Axios 또는 Fetch API 활용)\n   - Mock 데이터 저장소 및 응답 시뮬레이션 로직 개발\n   - 관리자 인터페이스에서 Mock/Real 모드 전환 UI 구현\n   ```jsx\n   // API 인터셉터 예시\n   const apiClient = axios.create({\n     baseURL: '/api'\n   });\n   \n   apiClient.interceptors.request.use(config => {\n     if (useMockApi) {\n       return mockApiHandler(config);\n     }\n     return config;\n   });\n   ```\n\n3. 엔티티별 CRUD 테스트 UI 개발:\n   - 사용자, 예약, 공지사항 등 주요 엔티티별 테스트 인터페이스 구현\n   - 테스트 케이스 정의 및 실행 기능\n   - 테스트 결과 기록 및 리포팅 기능\n   - 테스트 시나리오 자동화 및 회귀 테스트 지원\n   ```jsx\n   // CRUD 테스트 컴포넌트 예시\n   function CrudTester({ entity }) {\n     const [testResults, setTestResults] = useState([]);\n     \n     const runCreateTest = async () => {\n       const result = await testEntityCreation(entity, testData);\n       setTestResults(prev => [...prev, result]);\n     };\n     \n     // 유사한 방식으로 Read, Update, Delete 테스트 함수 구현\n     \n     return (\n       <div className=\"crud-tester\">\n         <h2>{entity} CRUD 테스트</h2>\n         <button onClick={runCreateTest}>Create 테스트</button>\n         {/* 다른 테스트 버튼들 */}\n         <TestResultsTable results={testResults} />\n       </div>\n     );\n   }\n   ```\n\n4. 성능 지표 추적 및 알림 시스템:\n   - 성능 임계값 설정 인터페이스 구현\n   - 임계값 초과 시 알림 발송 메커니즘 구현 (이메일, 슬랙, 인앱 알림 등)\n   - 성능 지표 히스토리 저장 및 트렌드 분석 기능\n   ```javascript\n   // 알림 시스템 예시\n   function checkPerformanceThresholds(metrics) {\n     const thresholds = getConfiguredThresholds();\n     \n     Object.entries(metrics).forEach(([key, value]) => {\n       if (thresholds[key] && value > thresholds[key]) {\n         triggerAlert({\n           metric: key,\n           value: value,\n           threshold: thresholds[key],\n           timestamp: new Date()\n         });\n       }\n     });\n   }\n   ```\n\n5. 개발자 친화적인 디버깅 도구 및 로그 분석:\n   - 로그 수집 및 중앙화 시스템 구현\n   - 로그 필터링, 검색, 시각화 인터페이스 개발\n   - 에러 스택 트레이스 분석 및 문제 해결 가이드 제공\n   - 개발자 콘솔 확장 기능 구현\n\n6. 백엔드 API 연동:\n   - 모니터링 데이터 수집 API 엔드포인트 구현\n   - 테스트 결과 저장 및 조회 API 개발\n   - 성능 지표 히스토리 API 구현\n   - 알림 설정 및 관리 API 개발\n\n7. 관리자 대시보드 통합:\n   - 기존 관리자 대시보드에 모니터링 및 테스트 탭 추가\n   - 권한 관리 및 접근 제어 구현\n   - 사용자 친화적인 UI/UX 설계",
+      "testStrategy": "1. 실시간 모니터링 대시보드 테스트:\n   - WebSocket/SSE 연결 안정성 테스트: 장시간(24시간 이상) 연결 유지 테스트\n   - 데이터 스트리밍 정확성 테스트: 모니터링 데이터가 정확히 표시되는지 검증\n   - 부하 테스트: 다량의 모니터링 데이터 처리 시 성능 측정\n   - 차트 및 그래프 렌더링 테스트: 다양한 데이터 패턴에서 시각화 정확성 검증\n\n2. Mock/Real API 토글 기능 테스트:\n   - 모드 전환 테스트: Mock과 Real 모드 간 전환이 정상적으로 작동하는지 확인\n   - Mock 응답 정확성 테스트: 미리 정의된 Mock 데이터가 올바르게 반환되는지 검증\n   - 에러 시나리오 테스트: Mock 모드에서 다양한 에러 상황 시뮬레이션 및 처리 검증\n\n3. CRUD 테스트 UI 기능 검증:\n   - 각 엔티티별(사용자, 예약, 공지사항) CRUD 작업 테스트 실행 및 결과 검증\n   - 테스트 케이스 추가/수정/삭제 기능 검증\n   - 테스트 결과 저장 및 히스토리 조회 기능 검증\n   - 자동화된 테스트 시나리오 실행 및 결과 검증\n\n4. 성능 지표 및 알림 시스템 테스트:\n   - 임계값 설정 및 저장 기능 테스트\n   - 알림 트리거 테스트: 임계값 초과 시 알림이 정상적으로 발송되는지 확인\n   - 알림 채널 테스트: 이메일, 슬랙, 인앱 알림 등 각 채널별 전송 검증\n   - 알림 히스토리 및 관리 기능 테스트\n\n5. 통합 테스트:\n   - 관리자 대시보드와의 통합 테스트: 모니터링 및 테스트 탭이 기존 대시보드와 원활하게 통합되는지 확인\n   - 권한 관리 테스트: 적절한 권한을 가진 사용자만 접근 가능한지 검증\n   - 전체 워크플로우 테스트: 모니터링 → 문제 감지 → 알림 → 테스트 → 문제 해결의 전체 흐름 검증\n\n6. 성능 및 부하 테스트:\n   - 대시보드 렌더링 성능 측정: 다량의 데이터 표시 시 렌더링 속도 측정\n   - 동시 사용자 테스트: 여러 관리자가 동시에 시스템 사용 시 성능 측정\n   - 장기간 안정성 테스트: 7일 이상 지속적인 운영 중 메모리 누수 및 성능 저하 모니터링\n\n7. 브라우저 호환성 테스트:\n   - 주요 브라우저(Chrome, Firefox, Safari, Edge)에서 모든 기능 테스트\n   - 반응형 디자인 테스트: 다양한 화면 크기에서 UI 검증\n\n8. 사용자 경험 테스트:\n   - 관리자 대상 사용성 테스트 진행\n   - 피드백 수집 및 UI/UX 개선사항 식별",
+      "status": "pending",
+      "dependencies": [
+        8,
+        9,
+        12,
+        13
+      ],
+      "priority": "medium",
+      "subtasks": []
     }
   ]
 }
