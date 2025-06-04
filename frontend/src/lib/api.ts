@@ -209,6 +209,49 @@ export interface PaginatedResponse<T> {
 }
 
 /**
+ * 사용자 타입 정의
+ */
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  name?: string;
+  phone?: string;
+  apartment_number?: string;
+  is_admin: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * 예약 타입 정의
+ */
+export interface Reservation {
+  id: number;
+  user_id: number;
+  date: string;
+  time: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  type: 'moving' | 'inspection' | 'maintenance';
+  description?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * 예약 생성 요청 타입
+ */
+export interface CreateReservationRequest {
+  date: string;
+  time: string;
+  type: 'moving' | 'inspection' | 'maintenance';
+  description?: string;
+  notes?: string;
+}
+
+/**
  * 강화된 API 메서드들
  */
 export const api = {
@@ -396,6 +439,109 @@ export const apiStatus = {
 
   // API 기본 URL
   getBaseUrl: () => API_BASE_URL,
+};
+
+/**
+ * 사용자 관련 API 함수들
+ */
+export const userApi = {
+  /**
+   * 현재 사용자 정보 조회
+   */
+  getCurrentUser: async (): Promise<ApiResponse<User>> => {
+    try {
+      const response = await apiClient.get('/api/users/me');
+      return response.data;
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 사용자 프로필 업데이트
+   */
+  updateProfile: async (userData: Partial<User>): Promise<ApiResponse<User>> => {
+    try {
+      const response = await apiClient.put('/api/users/me', userData);
+      return response.data;
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error);
+      throw error;
+    }
+  },
+};
+
+/**
+ * 예약 관련 API 함수들
+ */
+export const reservationApi = {
+  /**
+   * 내 예약 목록 조회
+   */
+  getMyReservations: async (page: number = 1, size: number = 10): Promise<ApiResponse<PaginatedResponse<Reservation>>> => {
+    try {
+      const response = await apiClient.get('/api/reservations/my', {
+        params: { page, size }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('내 예약 목록 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 예약 상세 정보 조회
+   */
+  getReservationDetail: async (id: number): Promise<ApiResponse<Reservation>> => {
+    try {
+      const response = await apiClient.get(`/api/reservations/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('예약 상세 정보 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 예약 생성
+   */
+  createReservation: async (reservationData: CreateReservationRequest): Promise<ApiResponse<Reservation>> => {
+    try {
+      const response = await apiClient.post('/api/reservations', reservationData);
+      return response.data;
+    } catch (error) {
+      console.error('예약 생성 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 예약 수정
+   */
+  updateReservation: async (id: number, reservationData: Partial<CreateReservationRequest>): Promise<ApiResponse<Reservation>> => {
+    try {
+      const response = await apiClient.put(`/api/reservations/${id}`, reservationData);
+      return response.data;
+    } catch (error) {
+      console.error('예약 수정 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 예약 취소
+   */
+  cancelReservation: async (id: number): Promise<ApiResponse<{ success: boolean }>> => {
+    try {
+      const response = await apiClient.delete(`/api/reservations/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('예약 취소 실패:', error);
+      throw error;
+    }
+  },
 };
 
 export default apiClient; 
