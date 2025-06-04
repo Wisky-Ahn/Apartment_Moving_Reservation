@@ -300,12 +300,49 @@ def raise_validation_error(field: str, value: Any = None, message: str = None):
 
 
 def raise_conflict(resource: str, reason: str = None):
-    """충돌 에러 발생"""
-    message = f"{resource}에서 충돌이 발생했습니다."
+    """
+    409 Conflict 에러 발생
+    
+    Args:
+        resource: 충돌이 발생한 리소스
+        reason: 충돌 이유 (옵션)
+    """
+    message = f"{resource} 충돌 발생"
     if reason:
-        message += f" ({reason})"
+        message += f": {reason}"
     
     raise ConflictException(
-        error_code=ErrorCode.RESERVATION_TIME_CONFLICT,
-        message=message
+        error_code=ErrorCode.DUPLICATE_VALUE,
+        message=message,
+        user_message=f"{resource}이(가) 이미 존재합니다."
+    )
+
+
+def raise_authentication_error(message: str = "인증에 실패했습니다.", user_message: str = None):
+    """
+    401 인증 에러 발생
+    
+    Args:
+        message: 내부 로그 메시지
+        user_message: 사용자에게 표시할 메시지
+    """
+    raise AuthenticationException(
+        error_code=ErrorCode.UNAUTHORIZED,
+        message=message,
+        user_message=user_message or "인증이 필요합니다."
+    )
+
+
+def raise_authorization_error(message: str = "권한이 없습니다.", user_message: str = None):
+    """
+    403 권한 에러 발생
+    
+    Args:
+        message: 내부 로그 메시지
+        user_message: 사용자에게 표시할 메시지
+    """
+    raise AuthorizationException(
+        error_code=ErrorCode.INSUFFICIENT_PERMISSIONS,
+        message=message,
+        user_message=user_message or "이 작업을 수행할 권한이 없습니다."
     ) 

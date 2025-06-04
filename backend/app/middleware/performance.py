@@ -262,7 +262,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
             # 요청 정보 로깅
             app_logger.info(
                 "API 요청 시작",
-                category=LogCategory.API,
+                category=LogCategory.API_REQUEST,
                 extra={
                     'request_id': request_id,
                     'method': request.method,
@@ -308,7 +308,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
             # 성공 로깅
             app_logger.info(
                 f"API 요청 완료: {request.method} {request.url.path}",
-                category=LogCategory.API,
+                category=LogCategory.API_RESPONSE,
                 extra={
                     'request_id': request_id,
                     'status_code': response.status_code,
@@ -343,7 +343,7 @@ class PerformanceMiddleware(BaseHTTPMiddleware):
             # 에러 로깅
             app_logger.error(
                 f"API 요청 에러: {request.method} {request.url.path}",
-                category=LogCategory.API,
+                category=LogCategory.API_REQUEST,
                 extra={
                     'request_id': request_id,
                     'error': str(e),

@@ -6,12 +6,12 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
-from app.core.security import get_password_hash
 
 def create_user(db: Session, user_data: UserCreate) -> User:
     """
     새로운 사용자 생성
     """
+    from app.core.security import get_password_hash
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         username=user_data.username,
@@ -30,6 +30,7 @@ def create_super_admin(db: Session, username: str, email: str, password: str, na
     """
     슈퍼관리자 생성
     """
+    from app.core.security import get_password_hash
     hashed_password = get_password_hash(password)
     db_user = User(
         username=username,
@@ -50,6 +51,7 @@ def create_admin_user(db: Session, user_data: UserCreate) -> User:
     """
     관리자 계정 생성 (승인 대기 상태)
     """
+    from app.core.security import get_password_hash
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         username=user_data.username,
