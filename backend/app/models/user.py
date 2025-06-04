@@ -27,6 +27,8 @@ class User(Base):
     
     # 권한 및 상태
     is_admin = Column(Boolean, default=False, comment="관리자 여부")
+    is_super_admin = Column(Boolean, default=False, comment="슈퍼관리자 여부")
+    admin_approved = Column(Boolean, default=None, nullable=True, comment="관리자 승인 여부 (None: 일반유저, False: 승인대기, True: 승인완료)")
     is_active = Column(Boolean, default=True, comment="계정 활성화 여부")
     
     # 시간 필드
@@ -62,6 +64,8 @@ class User(Base):
             "phone": self.phone,
             "apartment_number": self.apartment_number,
             "is_admin": self.is_admin,
+            "is_super_admin": self.is_super_admin,
+            "admin_approved": self.admin_approved,
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
