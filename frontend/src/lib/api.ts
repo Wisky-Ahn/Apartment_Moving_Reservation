@@ -3,12 +3,19 @@
  * FastAPI 백엔드와의 모든 API 통신을 담당
  * 강화된 에러 처리 시스템 적용
  */
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { parseApiError, AppError, ErrorCode, errorLogger } from './errors';
 import { toast } from './toast';
+import { getSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 
 // API 기본 설정
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// NextAuth Session 확장 타입
+interface ExtendedSession extends Session {
+  accessToken?: string;
+}
 
 /**
  * Axios 인스턴스 생성 및 기본 설정
@@ -48,29 +55,73 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// 전역 토큰 저장소
+let currentAuthToken: string | null = null;
+
 /**
- * 요청 인터셉터 - 모든 요청에 공통 설정 적용
+ * 인증 토큰 설정 (컴포넌트에서 호출)
+ */
+export function setAuthToken(token: string | null) {
+  currentAuthToken = token;
+  console.log(`🔑 Auth token ${token ? 'set' : 'cleared'}`);
+}
+
+/**
+ * 현재 인증 토큰 가져오기
+ */
+export function getCurrentAuthToken(): string | null {
+  return currentAuthToken;
+}
+
+/**
+ * 요청 인터셉터 - 토큰 추가 및 요청 로깅
  */
 apiClient.interceptors.request.use(
-  (config: AxiosRequestConfig): any => {
-    // 네트워크 상태 확인
-    if (!isOnline) {
-      return Promise.reject(new AppError(
-        ErrorCode.NETWORK_ERROR,
-        'No internet connection',
-        '인터넷 연결을 확인해주세요.'
-      ));
+  async (config: InternalAxiosRequestConfig) => {
+    // 요청 헤더가 없으면 초기화
+    if (!config.headers) {
+      config.headers = {} as any;
     }
 
-    // JWT 토큰이 있는 경우 Authorization 헤더에 추가
-    const token = localStorage.getItem('access_token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // NextAuth 세션에서 토큰 가져오기
+    try {
+      const session = await getSession() as ExtendedSession;
+      if (session?.accessToken) {
+        config.headers.Authorization = `Bearer ${session.accessToken}`;
+        console.log(`🔑 Using NextAuth accessToken for request: ${config.url}`);
+      } else {
+        console.log(`⚠️ No NextAuth token available for request: ${config.url}`);
+        
+        // Fallback: 전역 토큰 저장소에서 가져오기
+        const globalToken = getCurrentAuthToken();
+        if (globalToken) {
+          config.headers.Authorization = `Bearer ${globalToken}`;
+          console.log(`🔑 Using global token for request: ${config.url}`);
+        } else {
+          // Last fallback: localStorage에서 토큰 가져오기
+          const fallbackToken = localStorage.getItem('access_token');
+          if (fallbackToken) {
+            config.headers.Authorization = `Bearer ${fallbackToken}`;
+            console.log(`🔑 Using localStorage token for request: ${config.url}`);
+          } else {
+            console.log(`❌ No token available for request: ${config.url}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('세션 가져오기 실패:', error);
+      
+      // NextAuth 실패 시 fallback 토큰 사용
+      const globalToken = getCurrentAuthToken();
+      if (globalToken) {
+        config.headers.Authorization = `Bearer ${globalToken}`;
+        console.log(`🔑 Using fallback global token for request: ${config.url}`);
+      }
     }
     
     // 요청 ID 추가 (로깅용)
     const requestId = Math.random().toString(36).substr(2, 9);
-    config.headers = { ...config.headers, 'X-Request-Id': requestId };
+    config.headers['X-Request-Id'] = requestId;
     
     console.log(`🚀 API Request [${requestId}]: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
