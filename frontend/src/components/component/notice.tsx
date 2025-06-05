@@ -302,7 +302,6 @@ export function Notice() {
                   <TableHead className="font-semibold text-gray-700 py-4">작성자</TableHead>
                   <TableHead className="font-semibold text-gray-700 py-4">작성일</TableHead>
                   <TableHead className="font-semibold text-gray-700 py-4">조회수</TableHead>
-                  <TableHead className="text-right font-semibold text-gray-700 py-4">액션</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -340,47 +339,6 @@ export function Notice() {
                       <div className="flex items-center gap-1 text-gray-600">
                         <span className="text-purple-600">👁️</span>
                         <span>{notice.view_count}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right py-4">
-                      <div className="flex gap-1 justify-end">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewNotice(notice);
-                          }}
-                          className="hover:bg-blue-100 text-blue-600"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {session?.user?.isAdmin && (
-                          <>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditNotice(notice);
-                              }}
-                              className="hover:bg-green-100 text-green-600"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteNotice(notice.id);
-                              }}
-                              className="hover:bg-red-100 text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
                       </div>
                     </TableCell>
                   </TableRow>
