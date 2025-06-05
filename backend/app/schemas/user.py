@@ -222,7 +222,7 @@ class UserInDB(UserBase):
     id: int = Field(..., description="사용자 ID")
     is_admin: bool = Field(..., description="관리자 여부")
     is_super_admin: bool = Field(False, description="슈퍼관리자 여부")
-    admin_approved: bool = Field(False, description="관리자 승인 여부")
+    admin_approved: Optional[bool] = Field(None, description="관리자 승인 여부 (None: 일반유저, False: 승인대기, True: 승인완료)")
     is_active: bool = Field(..., description="활성 상태")
     created_at: datetime = Field(..., description="생성일시")
     updated_at: datetime = Field(..., description="수정일시")
@@ -232,11 +232,19 @@ class UserInDB(UserBase):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 
 class UserResponse(UserInDB):
     """사용자 응답 스키마 (비밀번호 제외)"""
-    pass
+    
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 
 class UserListResponse(BaseModel):
@@ -251,34 +259,9 @@ class UserListResponse(BaseModel):
 
 
 class UserLogin(BaseModel):
-    """로그인 스키마"""
-    username: str = Field(
-        ..., 
-        min_length=3, 
-        max_length=50,
-        description="사용자명 또는 이메일"
-    )
-    password: str = Field(
-        ..., 
-        min_length=1, 
-        max_length=128,
-        description="비밀번호"
-    )
-    
-    @validator('username')
-    def validate_username(cls, v):
-        """로그인 사용자명 검증"""
-        # 이메일 형식이거나 일반 사용자명 형식이어야 함
-        if '@' in v:
-            # 이메일 형식 체크
-            if not re.match(r'^[^@]+@[^@]+\.[^@]+$', v):
-                raise ValueError('올바른 이메일 형식이 아닙니다.')
-        else:
-            # 사용자명 형식 체크
-            if not re.match(r'^[a-zA-Z0-9_-]+$', v):
-                raise ValueError('사용자명은 영문, 숫자, 언더바, 하이픈만 허용됩니다.')
-        
-        return v.lower().strip()
+    """로그인 스키마 (단순화됨)"""
+    username: str = Field(..., description="사용자명 또는 이메일")
+    password: str = Field(..., description="비밀번호")
 
 
 class TokenResponse(BaseModel):
@@ -289,4 +272,7 @@ class TokenResponse(BaseModel):
     user: UserResponse = Field(..., description="사용자 정보")
     
     class Config:
-        from_attributes = True 
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        } 

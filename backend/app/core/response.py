@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
 from fastapi import status
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
 from app.core.exceptions import ErrorCode
 
@@ -68,8 +69,11 @@ def success_response(
         meta=meta
     )
     
+    # Pydantic 모델과 datetime 객체를 올바르게 직렬화
+    serialized_data = jsonable_encoder(response_data.dict(exclude_none=True))
+    
     return JSONResponse(
-        content=response_data.dict(exclude_none=True),
+        content=serialized_data,
         status_code=status_code
     )
 
@@ -155,8 +159,11 @@ def paginated_response(
         meta=meta
     )
     
+    # Pydantic 모델과 datetime 객체를 올바르게 직렬화
+    serialized_data = jsonable_encoder(response_data.dict(exclude_none=True))
+    
     return JSONResponse(
-        content=response_data.dict(exclude_none=True),
+        content=serialized_data,
         status_code=status_code
     )
 

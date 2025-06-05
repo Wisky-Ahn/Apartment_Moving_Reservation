@@ -215,6 +215,9 @@ class ReservationInDB(ReservationBase):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 
 class ReservationResponse(ReservationInDB):
@@ -226,6 +229,9 @@ class ReservationResponse(ReservationInDB):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 
 class ReservationListResponse(BaseModel):
@@ -239,6 +245,9 @@ class ReservationListResponse(BaseModel):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 
 class ReservationSearchParams(BaseModel):

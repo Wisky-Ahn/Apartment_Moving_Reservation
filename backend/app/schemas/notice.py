@@ -53,11 +53,20 @@ class NoticeInDB(NoticeBase):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 class NoticeResponse(NoticeInDB):
     """공지사항 응답 스키마"""
     is_new: bool
     display_type: str
+    
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 class NoticeListItem(BaseModel):
     """공지사항 목록 아이템 스키마"""
@@ -74,6 +83,9 @@ class NoticeListItem(BaseModel):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 class NoticeListResponse(BaseModel):
     """공지사항 목록 응답 스키마"""
