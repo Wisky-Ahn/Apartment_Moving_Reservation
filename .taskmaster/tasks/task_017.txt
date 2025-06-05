@@ -1,0 +1,142 @@
+# Task ID: 17
+# Title: 예약 API 페이지네이션 파라미터 검증 로직 수정
+# Status: done
+# Dependencies: 16, 2
+# Priority: high
+# Description: GET /api/reservations/my 엔드포인트에서 page와 size 쿼리 파라미터 검증 시 발생하는 422 "Validation error" 문제를 해결합니다.
+# Details:
+이 작업은 예약 API의 페이지네이션 파라미터 검증 로직을 수정하여 사용자의 예약 목록을 조회할 때 발생하는 422 오류를 해결합니다.
+
+1. 문제 분석:
+   - GET /api/reservations/my?page=1&size=10 요청 시 422 "Validation error" 발생
+   - 원인: `/api/reservations/my` 엔드포인트가 존재하지 않았음
+
+2. 구현 완료 사항:
+   - 누락된 `/api/reservations/my` 엔드포인트 구현
+   - JWT 인증을 통한 현재 사용자 식별 구현
+   - 페이지네이션 파라미터 정의 및 검증 구현:
+     ```python
+     @router.get("/my", response_model=List[ReservationResponse])
+     async def get_my_reservations(
+         page: Optional[int] = Query(1, ge=1, description="페이지 번호"),
+         size: Optional[int] = Query(10, ge=1, le=100, description="페이지 크기"),
+         current_user: User = Depends(get_current_user)
+     ):
+         # 구현 코드
+     ```
+   - 페이지네이션 로직 구현 (skip 계산, has_next/has_prev 포함)
+   - FastAPI 라우팅 순서 문제 해결 (`/my` 엔드포인트를 `/{reservation_id}` 앞에 배치)
+
+3. 파라미터 유효성 검사 로직:
+   - page 파라미터: 1 이상의 정수 (기본값: 1)
+   - size 파라미터: 1-100 사이의 정수 (기본값: 10)
+   - 파라미터가 제공되지 않을 경우 기본값 사용
+
+4. 결과:
+   - 더 이상 422 "Validation error"가 발생하지 않음
+   - 정상적으로 200 OK와 페이지네이션된 결과 반환
+   - curl 테스트로 정상 동작 확인 완료
+
+# Test Strategy:
+1. 단위 테스트:
+   - 다양한 파라미터 조합으로 `/api/reservations/my` 엔드포인트 테스트
+   - 테스트 케이스 작성:
+     ```python
+     def test_get_my_reservations_with_valid_params():
+         # 유효한 파라미터로 테스트
+         response = client.get("/api/reservations/my?page=1&size=10", headers=auth_headers)
+         assert response.status_code == 200
+     
+     def test_get_my_reservations_without_params():
+         # 파라미터 없이 테스트 (기본값 사용)
+         response = client.get("/api/reservations/my", headers=auth_headers)
+         assert response.status_code == 200
+     
+     def test_get_my_reservations_with_invalid_params():
+         # 유효하지 않은 파라미터로 테스트
+         response = client.get("/api/reservations/my?page=0&size=10", headers=auth_headers)
+         assert response.status_code == 422
+         
+         response = client.get("/api/reservations/my?page=abc&size=10", headers=auth_headers)
+         assert response.status_code == 422
+     ```
+
+2. 수동 테스트:
+   - Swagger UI에서 다음 시나리오 테스트:
+     - 파라미터 없이 요청 (기본값 적용 확인)
+     - 유효한 파라미터로 요청 (page=1, size=10)
+     - 유효하지 않은 파라미터로 요청 (page=0, size=0)
+     - 문자열 파라미터로 요청 (page=abc, size=def)
+   - Postman 또는 curl을 사용하여 동일한 테스트 수행
+
+3. 통합 테스트:
+   - 프론트엔드에서 예약 목록 페이지 접속 후 페이지네이션 기능 테스트
+   - 페이지 이동 및 페이지 크기 변경 시 API 호출 확인
+   - 네트워크 탭에서 요청/응답 검사
+
+4. 회귀 테스트:
+   - 다른 예약 관련 API 엔드포인트가 영향을 받지 않는지 확인
+   - 관리자 대시보드의 예약 목록 기능 테스트
+
+5. 성능 테스트:
+   - 대량의 예약 데이터가 있을 때 페이지네이션이 올바르게 작동하는지 확인
+   - 다양한 size 값으로 응답 시간 측정
+
+6. 완료된 테스트:
+   - curl을 사용한 기본 기능 테스트 완료 - 정상 동작 확인
+
+# Subtasks:
+## 17.1. 누락된 /my 엔드포인트 구현 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.2. JWT 인증을 통한 현재 사용자 식별 구현 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.3. page, size 파라미터 검증 구현 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.4. 페이지네이션 로직 구현 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.5. FastAPI 경로 순서 문제 해결 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.6. curl 테스트로 정상 동작 확인 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.7. 단위 테스트 작성 및 실행 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.8. Swagger UI에서 테스트 수행 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+
+## 17.9. 프론트엔드 통합 테스트 [done]
+### Dependencies: None
+### Description: 
+### Details:
+
+

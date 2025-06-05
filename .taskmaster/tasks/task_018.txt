@@ -1,0 +1,95 @@
+# Task ID: 18
+# Title: 통계 API 기본 엔드포인트 구현
+# Status: pending
+# Dependencies: 16
+# Priority: medium
+# Description: 현재 404 에러를 반환하는 통계 API 엔드포인트들(dashboard-stats, monthly-stats, daily-stats, time-slots-stats, status-distribution)을 구현하여 관리자 대시보드의 통계 기능을 정상화합니다.
+# Details:
+이 작업은 관리자 대시보드에 필요한 통계 API 엔드포인트들을 구현하는 것입니다. 현재 이 엔드포인트들은 구현되지 않아 404 에러를 반환하고 있습니다.
+
+1. 통계 API 엔드포인트 구조 설계:
+   - `/api/stats/dashboard-stats`: 대시보드 요약 통계 (총 예약 수, 오늘 예약 수, 승인률 등)
+   - `/api/stats/monthly-stats`: 월별 예약 통계 (월별 예약 수, 취소 수 등)
+   - `/api/stats/daily-stats`: 일별 예약 통계 (일별 예약 수, 승인/거부 수 등)
+   - `/api/stats/time-slots-stats`: 시간대별 예약 통계 (인기 시간대, 시간대별 예약 분포)
+   - `/api/stats/status-distribution`: 예약 상태별 분포 (승인, 대기, 거부, 취소 등)
+
+2. 각 엔드포인트별 라우터 구현:
+   ```python
+   from fastapi import APIRouter, Depends
+   from app.auth.jwt_bearer import JWTBearer
+   
+   router = APIRouter(
+       prefix="/api/stats",
+       tags=["statistics"],
+       dependencies=[Depends(JWTBearer())]
+   )
+   
+   @router.get("/dashboard-stats")
+   async def get_dashboard_stats():
+       # 초기 구현은 Mock 데이터 반환
+       return {
+           "total_reservations": 120,
+           "today_reservations": 8,
+           "approval_rate": 85.5,
+           "pending_count": 12
+       }
+   
+   # 다른 엔드포인트들도 유사한 방식으로 구현
+   ```
+
+3. Mock 데이터 구조 설계:
+   - 각 엔드포인트별로 의미 있는 Mock 데이터 구조 정의
+   - 차트 및 그래프 표시에 적합한 데이터 포맷 사용
+   - 실제 데이터베이스 연동을 위한 인터페이스 준비
+
+4. 라우터 등록:
+   - 메인 FastAPI 애플리케이션에 통계 라우터 등록
+   ```python
+   from app.routers import stats
+   app.include_router(stats.router)
+   ```
+
+5. JWT 인증 적용:
+   - 모든 통계 API는 관리자 권한이 필요하므로 JWT 인증 미들웨어 적용
+   - Task 16에서 수정된 JWT 인증 미들웨어 활용
+
+6. 응답 형식 표준화:
+   - 모든 통계 API는 일관된 응답 형식 사용
+   - 에러 처리 및 예외 상황 대응 로직 구현
+
+# Test Strategy:
+1. 각 통계 API 엔드포인트 기본 동작 테스트:
+   - 각 엔드포인트에 GET 요청을 보내 200 OK 응답이 오는지 확인
+   - 응답 데이터가 예상된 JSON 구조를 가지고 있는지 검증
+   ```bash
+   curl -X GET "http://localhost:8000/api/stats/dashboard-stats" -H "Authorization: Bearer {token}"
+   ```
+
+2. 인증 테스트:
+   - 인증 토큰 없이 요청 시 401 Unauthorized 응답 확인
+   - 잘못된 토큰으로 요청 시 403 Forbidden 응답 확인
+   - 관리자 권한이 없는 사용자 토큰으로 요청 시 권한 거부 확인
+
+3. 프론트엔드 연동 테스트:
+   - 관리자 대시보드에서 각 통계 차트가 정상적으로 표시되는지 확인
+   - 데이터 로딩 상태 및 에러 처리가 UI에 적절히 반영되는지 확인
+
+4. 자동화 테스트 작성:
+   ```python
+   def test_dashboard_stats_endpoint():
+       response = client.get("/api/stats/dashboard-stats", headers={"Authorization": f"Bearer {admin_token}"})
+       assert response.status_code == 200
+       data = response.json()
+       assert "total_reservations" in data
+       assert "today_reservations" in data
+       assert "approval_rate" in data
+   ```
+
+5. 엣지 케이스 테스트:
+   - 데이터가 없는 경우 적절한 기본값 또는 빈 배열 반환 확인
+   - 대량의 데이터가 있을 때 성능 및 응답 시간 확인
+
+6. 문서화 확인:
+   - Swagger UI에서 모든 통계 API 엔드포인트가 올바르게 문서화되었는지 확인
+   - 각 엔드포인트의 파라미터 및 응답 스키마가 명확히 정의되었는지 검증
