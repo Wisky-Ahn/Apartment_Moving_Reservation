@@ -134,6 +134,18 @@ export default function RegisterPage() {
       newErrors.confirmPassword = "비밀번호가 일치하지 않습니다."
     }
 
+    // 아파트 호수 검증 (필수)
+    if (!formData.apartment_number.trim()) {
+      newErrors.apartment_number = "아파트 호수를 입력해주세요."
+    } else if (!/^[0-9]{1,4}동\s?[0-9]{1,4}호$/.test(formData.apartment_number.trim())) {
+      newErrors.apartment_number = "올바른 형식으로 입력해주세요. (예: 101동 1001호)"
+    }
+
+    // 전화번호 검증 (선택사항이지만 입력 시 형식 확인)
+    if (formData.phone.trim() && !/^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(formData.phone.trim())) {
+      newErrors.phone = "올바른 전화번호 형식을 입력해주세요. (예: 010-1234-5678)"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -165,8 +177,8 @@ export default function RegisterPage() {
           email: formData.email,
           password: formData.password,
           name: formData.name,
-          phone: formData.phone || null,
-          apartment_number: formData.apartment_number || null
+          phone: formData.phone.trim() || null,
+          apartment_number: formData.apartment_number.trim()
         }),
       })
 
@@ -319,7 +331,7 @@ export default function RegisterPage() {
             {/* 전화번호 입력 */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                전화번호
+                전화번호 (선택사항)
               </label>
               <Input
                 id="phone"
@@ -330,7 +342,7 @@ export default function RegisterPage() {
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.phone ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                placeholder="전화번호를 입력하세요 (선택사항)"
+                placeholder="010-1234-5678"
               />
               {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
             </div>
@@ -338,18 +350,19 @@ export default function RegisterPage() {
             {/* 아파트 호수 입력 */}
             <div>
               <label htmlFor="apartment_number" className="block text-sm font-medium text-gray-700">
-                아파트 호수
+                아파트 호수 *
               </label>
               <Input
                 id="apartment_number"
                 name="apartment_number"
                 type="text"
+                required
                 value={formData.apartment_number}
                 onChange={handleInputChange}
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.apartment_number ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
-                placeholder="예: 101동 1001호 (선택사항)"
+                placeholder="101동 1001호"
               />
               {errors.apartment_number && <p className="mt-1 text-sm text-red-600">{errors.apartment_number}</p>}
             </div>

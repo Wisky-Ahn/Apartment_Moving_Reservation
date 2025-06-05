@@ -74,3 +74,41 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* 모바일 터치 환경을 위한 버튼 최적화 */
+  .btn-touch-optimized {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation;
+  }
+  
+  /* 접근성을 위한 포커스 상태 강화 */
+  .btn-accessible:focus-visible {
+    @apply ring-4 ring-offset-4;
+  }
+  
+  /* 로딩 상태 애니메이션 */
+  .btn-loading {
+    @apply cursor-not-allowed opacity-70;
+  }
+  
+  /* 터치 디바이스에서 호버 효과 비활성화 */
+  @media (hover: none) and (pointer: coarse) {
+    .btn-hover-disable:hover {
+      @apply transform-none shadow-none;
+    }
+  }
+  
+  /* 고대비 모드 지원 */
+  @media (prefers-contrast: high) {
+    .btn-high-contrast {
+      @apply border-2 border-current;
+    }
+  }
+  
+  /* 애니메이션 감소 모드 지원 */
+  @media (prefers-reduced-motion: reduce) {
+    .btn-reduced-motion {
+      @apply transition-none;
+    }
+  }
+}
