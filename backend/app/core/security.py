@@ -5,6 +5,7 @@ JWT 토큰 생성/검증, 비밀번호 해싱, 인증/권한 시스템
 argon2를 사용한 고성능 패스워드 해싱
 """
 from datetime import datetime, timedelta
+import time
 from typing import Optional, Union
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -80,21 +81,30 @@ def verify_token(token: str) -> Optional[dict]:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         
-        # 토큰 만료 확인
+        # 토큰 만료 확인 (UTC timestamp 비교)
         exp = payload.get("exp")
         if exp is None:
+            print(f"🚫 토큰에 exp 필드가 없음")
             return None
         
-        if datetime.utcnow() > datetime.fromtimestamp(exp):
+        # 현재 시간을 UTC timestamp로 변환하여 비교
+        current_timestamp = time.time()
+        if current_timestamp > exp:
+            print(f"🚫 토큰 만료: 현재={current_timestamp:.0f}, 만료={exp:.0f}, 차이={exp-current_timestamp:.0f}초")
             return None
+        else:
+            print(f"✅ 토큰 유효: 현재={current_timestamp:.0f}, 만료={exp:.0f}, 남은시간={exp-current_timestamp:.0f}초")
         
         # 토큰 타입 확인
         token_type = payload.get("type")
         if token_type != "access":
+            print(f"🚫 잘못된 토큰 타입: {token_type}")
             return None
         
+        print(f"✅ 토큰 검증 성공: sub={payload.get('sub')}, user_id={payload.get('user_id')}")
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"🚫 JWT 에러: {str(e)}")
         return None
 
 async def get_current_user_token(
