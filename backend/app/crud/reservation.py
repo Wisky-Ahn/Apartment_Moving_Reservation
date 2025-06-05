@@ -3,10 +3,11 @@
 데이터베이스 예약 관련 생성, 조회, 수정, 삭제 작업
 """
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+from sqlalchemy import and_, or_, func, join
 from typing import Optional, Tuple, List
 from datetime import date, datetime
 from app.models.reservation import Reservation, ReservationStatus
+from app.models.user import User
 from app.schemas.reservation import ReservationCreate, ReservationUpdate
 
 
@@ -207,4 +208,35 @@ def get_user_reservations(
     if status_filter:
         query = query.filter(Reservation.status == status_filter)
     
-    return query.order_by(Reservation.reservation_date.desc()).all() 
+    return query.order_by(Reservation.reservation_date.desc()).all()
+
+
+def check_apartment_reservation_limit(db: Session, user_id: int) -> Tuple[bool, List[Reservation]]:
+    """
+    호수당 예약 제한 검사 - 같은 호수에서 기존 예약이 있는지 확인
+    
+    Args:
+        db: 데이터베이스 세션
+        user_id: 현재 사용자 ID
+        
+    Returns:
+        Tuple[bool, List[Reservation]]: (제한 초과 여부, 기존 예약 목록)
+    """
+    # 현재 사용자 정보 조회
+    current_user = db.query(User).filter(User.id == user_id).first()
+    if not current_user or not current_user.apartment_number:
+        # 호수 정보가 없으면 제한 없음
+        return False, []
+    
+    # 같은 호수의 활성 예약 조회 (pending, approved 상태)
+    existing_reservations = db.query(Reservation).join(User).filter(
+        and_(
+            User.apartment_number == current_user.apartment_number,
+            Reservation.status.in_([ReservationStatus.PENDING, ReservationStatus.APPROVED])
+        )
+    ).all()
+    
+    # 기존 예약이 있으면 제한 초과
+    has_existing = len(existing_reservations) > 0
+    
+    return has_existing, existing_reservations 

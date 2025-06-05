@@ -33,8 +33,8 @@ class UserBase(BaseModel):
         description="휴대폰 번호 (010-1234-5678 형식)"
     )
     
-    apartment_number: Optional[str] = Field(
-        None, 
+    apartment_number: str = Field(
+        ..., 
         pattern=r'^[0-9]{1,4}동\s?[0-9]{1,4}호$',
         description="아파트 동호수 (예: 101동 1001호)"
     )

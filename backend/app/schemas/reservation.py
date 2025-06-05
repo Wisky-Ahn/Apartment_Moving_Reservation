@@ -97,11 +97,12 @@ class ReservationBase(BaseModel):
 
 class ReservationCreate(ReservationBase):
     """예약 생성 스키마"""
+    user_id: Optional[int] = Field(None, description="사용자 ID (자동 설정)")
     
     @validator('reservation_type')
     def validate_reservation_type(cls, v):
         """예약 유형 검증"""
-        if v not in [ReservationType.move_in, ReservationType.move_out]:
+        if v not in [ReservationType.ELEVATOR, ReservationType.PARKING, ReservationType.OTHER]:
             raise ValueError('올바른 예약 유형을 선택해주세요.')
         return v
 
