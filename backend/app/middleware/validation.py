@@ -92,7 +92,7 @@ class ValidationMiddleware(BaseHTTPMiddleware):
                 logger.log_validation_error(
                     field=e.details.get('field', 'unknown') if e.details else 'unknown',
                     value="request_data",
-                    error_message=e.message,
+                    error_message=str(e),
                     path=request.url.path,
                     method=request.method
                 )

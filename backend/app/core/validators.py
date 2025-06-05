@@ -484,7 +484,7 @@ def validate_request_data(data: Dict[str, Any], validation_type: str = "user") -
         app_logger.log_validation_error(
             field=e.details.get('field', 'unknown') if e.details else 'unknown',
             value=str(data),
-            error_message=e.message
+            error_message=str(e)
         )
         raise
     except Exception as e:

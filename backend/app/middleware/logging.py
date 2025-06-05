@@ -212,8 +212,8 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 # JSON 본문 읽기 (한 번만 읽을 수 있으므로 주의 필요)
                 body = await request.body()
                 if body:
-                    # 요청 본문을 다시 사용할 수 있도록 스트림 재설정
-                    # 이것은 FastAPI의 내부 동작에 의존하므로 주의 필요
+                    # 요청 본문을 다시 읽을 수 있도록 설정 (중요!)
+                    request._body = body
                     return json.loads(body.decode())
             
             elif "application/x-www-form-urlencoded" in content_type:

@@ -2,13 +2,15 @@
 보안 관련 유틸리티
 JWT 토큰 생성/검증, 비밀번호 해싱, 인증/권한 시스템
 강화된 보안 및 에러 처리 적용
+argon2를 사용한 고성능 패스워드 해싱
 """
 from datetime import datetime, timedelta
 from typing import Optional, Union
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError, HashingError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -22,25 +24,34 @@ from app.core.exceptions import (
 from app.db.database import get_db
 from app.crud.user import get_user, get_user_by_username
 
-# 비밀번호 해싱 컨텍스트
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Argon2 패스워드 해셔 (고성능)
+ph = PasswordHasher()
 
 # JWT Bearer 토큰 스키마
 security = HTTPBearer()
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    비밀번호 검증
+    비밀번호 검증 (Argon2 사용)
     평문 비밀번호와 해시된 비밀번호를 비교
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        ph.verify(hashed_password, plain_password)
+        return True
+    except VerifyMismatchError:
+        return False
+    except Exception:
+        return False
 
 def get_password_hash(password: str) -> str:
     """
-    비밀번호 해싱
+    비밀번호 해싱 (Argon2 사용)
     평문 비밀번호를 해시로 변환
     """
-    return pwd_context.hash(password)
+    try:
+        return ph.hash(password)
+    except HashingError as e:
+        raise Exception(f"패스워드 해싱 실패: {str(e)}")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
