@@ -111,11 +111,18 @@ async def get_all_reservations(
             date_to=date_to
         )
         
+        # 페이지 정보 계산
+        page = (skip // limit) + 1
+        has_next = skip + limit < total
+        has_prev = skip > 0
+        
         return ReservationListResponse(
             reservations=reservations,
             total=total,
-            page=skip // limit + 1,
-            per_page=limit
+            page=page,
+            size=limit,
+            has_next=has_next,
+            has_prev=has_prev
         )
         
     except Exception as e:
