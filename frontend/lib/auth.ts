@@ -53,6 +53,7 @@ export const authOptions: NextAuthOptions = {
               name: data.data.user.name,
               username: data.data.user.username,
               isAdmin: data.data.user.is_admin,
+              isSuperAdmin: data.data.user.is_super_admin,
               accessToken: data.data.access_token,
             }
             console.log('🔍 Returning user object:', user)
@@ -78,18 +79,23 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.isAdmin = (user as any).isAdmin
+        token.isSuperAdmin = (user as any).isSuperAdmin
         token.accessToken = (user as any).accessToken
         token.username = (user as any).username
+        console.log('🔍 JWT token after update:', token)
       }
       return token
     },
     async session({ session, token }) {
-      console.log('🔍 Session callback - session:', session, 'token:', token)
+      console.log('🔍 Session callback - session before:', session, 'token:', token)
       if (session.user && token) {
         (session.user as any).id = token.id as string
         (session.user as any).username = token.username as string
         (session.user as any).isAdmin = token.isAdmin as boolean
-        (session.user as any).accessToken = token.accessToken as string
+        (session.user as any).isSuperAdmin = token.isSuperAdmin as boolean
+        // accessToken을 세션의 루트 레벨에 추가
+        (session as any).accessToken = token.accessToken as string
+        console.log('🔍 Session after update:', session)
       }
       return session
     }
