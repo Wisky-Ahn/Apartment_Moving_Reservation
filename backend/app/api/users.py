@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 from sqlalchemy import or_
+import time
 
 from app.db.database import get_db
 from app.models.user import User
@@ -285,6 +286,14 @@ async def reject_admin(
             user_message="관리자 거부 중 오류가 발생했습니다."
         )
 
+@router.post("/test-login")
+async def test_login_simple(user_credentials: UserLogin):
+    """
+    의존성 없는 간단한 로그인 테스트
+    """
+    print(f"🧪 테스트 로그인 시작: {user_credentials.username}")
+    return {"message": "테스트 로그인 성공", "username": user_credentials.username}
+
 @router.post("/login")
 async def login_user(
     user_credentials: UserLogin,
@@ -303,18 +312,42 @@ async def login_user(
     Raises:
         AuthenticationException: 인증 실패 시
     """
+    start_time = time.time()
+    print(f"🚀 로그인 시작: {user_credentials.username}")
+    
     try:
-        # 사용자 조회
+        # 사용자 조회 (타임아웃 모니터링)
+        print(f"📊 1단계: 사용자 조회 시작")
+        user_query_start = time.time()
         user = get_user_by_username(db, user_credentials.username)
+        query_time = time.time() - user_query_start
+        print(f"📊 1단계 완료: 사용자 조회 {query_time:.3f}초")
+        
+        if query_time > 1.0:  # 1초 이상 걸리면 경고
+            print(f"⚠️ 사용자 조회 느림: {query_time:.3f}초")
+        
         if not user:
+            print(f"❌ 사용자 없음: {user_credentials.username}")
             raise AuthenticationException(
                 error_code=ErrorCode.INVALID_CREDENTIALS,
                 message=f"존재하지 않는 사용자명: {user_credentials.username}",
                 user_message="잘못된 사용자명 또는 비밀번호입니다."
             )
         
-        # 비밀번호 확인
-        if not verify_password(user_credentials.password, user.hashed_password):
+        print(f"✅ 사용자 발견: {user.username}, 해시: {user.hashed_password[:50]}...")
+        
+        # 비밀번호 확인 (타임아웃 모니터링)
+        print(f"🔐 2단계: 비밀번호 검증 시작")
+        verify_start = time.time()
+        password_valid = verify_password(user_credentials.password, user.hashed_password)
+        verify_time = time.time() - verify_start
+        print(f"🔐 2단계 완료: 비밀번호 검증 {verify_time:.3f}초, 결과: {password_valid}")
+        
+        if verify_time > 1.0:  # 1초 이상 걸리면 경고
+            print(f"⚠️ 비밀번호 검증 느림: {verify_time:.3f}초")
+        
+        if not password_valid:
+            print(f"❌ 비밀번호 불일치: {user_credentials.username}")
             raise AuthenticationException(
                 error_code=ErrorCode.INVALID_CREDENTIALS,
                 message=f"잘못된 비밀번호: 사용자 {user_credentials.username}",
@@ -322,25 +355,37 @@ async def login_user(
             )
         
         # 계정 활성화 확인
+        print(f"🔍 3단계: 계정 활성화 확인")
         if not user.is_active:
             # 관리자 승인 대기 중인 경우 특별한 메시지
             if user.is_admin and user.admin_approved == False:
+                print(f"⏳ 관리자 승인 대기: {user_credentials.username}")
                 raise AuthenticationException(
                     error_code=ErrorCode.ADMIN_APPROVAL_REQUIRED,
                     message=f"관리자 승인 대기 중인 사용자: {user_credentials.username}",
                     user_message="관리자 승인 대기 중입니다. 슈퍼관리자에게 문의하세요."
                 )
             else:
+                print(f"❌ 비활성화된 계정: {user_credentials.username}")
                 raise AuthenticationException(
                     error_code=ErrorCode.ACCOUNT_DISABLED,
                     message=f"비활성화된 계정: {user_credentials.username}",
                     user_message="비활성화된 계정입니다. 관리자에게 문의하세요."
                 )
         
+        print(f"✅ 3단계 완료: 계정 활성 상태")
+        
         # JWT 토큰 생성
+        print(f"🎫 4단계: JWT 토큰 생성 시작")
+        token_start = time.time()
         access_token = create_access_token(
             data={"sub": user.username, "user_id": user.id}
         )
+        token_time = time.time() - token_start
+        print(f"🎫 4단계 완료: JWT 토큰 생성 {token_time:.3f}초")
+        
+        total_time = time.time() - start_time
+        print(f"✅ 로그인 완료: 총 {total_time:.3f}초 (쿼리: {query_time:.3f}s, 검증: {verify_time:.3f}s, 토큰: {token_time:.3f}s)")
         
         # 표준 성공 응답 반환
         return ResponseHelper.success(
@@ -360,12 +405,93 @@ async def login_user(
         )
         
     except AuthenticationException:
+        total_time = time.time() - start_time
+        print(f"🚫 로그인 인증 실패: {total_time:.3f}초")
         raise
     except Exception as e:
+        total_time = time.time() - start_time
+        print(f"❌ 로그인 실패: {total_time:.3f}초, 에러: {str(e)}")
         raise AuthenticationException(
             error_code=ErrorCode.UNAUTHORIZED,
             message=f"로그인 중 예상치 못한 오류: {str(e)}",
             user_message="로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+        )
+
+@router.get("/")
+async def get_users(
+    page: int = Query(1, ge=1, description="페이지 번호"),
+    size: int = Query(20, ge=1, le=100, description="페이지 크기"),
+    db: Session = Depends(get_db)
+):
+    """
+    일반 사용자 목록 조회 (기본 정보만)
+    
+    Args:
+        page: 페이지 번호 (1부터 시작)
+        size: 페이지 크기
+        db: 데이터베이스 세션
+        
+    Returns:
+        JSONResponse: 페이지네이션된 사용자 목록 (기본 정보만)
+    """
+    try:
+        # 활성 사용자만 조회
+        query = db.query(User).filter(User.is_active == True)
+        
+        # 전체 개수 조회
+        total = query.count()
+        
+        # 페이지네이션 적용
+        skip = (page - 1) * size
+        users = query.offset(skip).limit(size).all()
+        
+        # 기본 정보만 반환 (보안상 이유로 제한된 정보만)
+        user_basic_info = [
+            {
+                "id": user.id,
+                "username": user.username,
+                "name": user.name,
+                "is_admin": user.is_admin
+            }
+            for user in users
+        ]
+        
+        return ResponseHelper.paginated(
+            items=user_basic_info,
+            page=page,
+            size=size,
+            total=total,
+            message="사용자 목록을 성공적으로 조회했습니다."
+        )
+        
+    except Exception as e:
+        raise BusinessLogicException(
+            error_code=ErrorCode.OPERATION_FAILED,
+            message=f"사용자 목록 조회 중 오류: {str(e)}",
+            user_message="사용자 목록 조회 중 오류가 발생했습니다."
+        )
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_profile(
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    현재 로그인한 사용자의 프로필을 조회합니다.
+    
+    Args:
+        current_user: 현재 인증된 사용자
+        
+    Returns:
+        UserResponse: 현재 사용자 정보
+    """
+    try:
+        return UserResponse.from_orm(current_user)
+        
+    except Exception as e:
+        raise BusinessLogicException(
+            error_code=ErrorCode.OPERATION_FAILED,
+            message=f"사용자 프로필 조회 중 오류: {str(e)}",
+            user_message="사용자 프로필 조회 중 오류가 발생했습니다."
         )
 
 @router.get("/{user_id}", response_model=UserResponse)

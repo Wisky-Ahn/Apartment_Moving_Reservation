@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.notice import Notice
+from app.models.user import User
 from app.schemas.notice import (
     NoticeCreate,
     NoticeUpdate,
@@ -25,6 +26,7 @@ from app.crud.notice import (
     increment_view_count,
     get_notice_stats
 )
+from app.core.security import get_current_admin_user
 
 # APIRouter 인스턴스 생성
 router = APIRouter(
@@ -37,7 +39,8 @@ router = APIRouter(
 @router.post("/", response_model=NoticeResponse, status_code=status.HTTP_201_CREATED)
 async def create_new_notice(
     notice_data: NoticeCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_admin_user)
 ):
     """
     새로운 공지사항을 작성합니다. (관리자 전용)
@@ -45,6 +48,7 @@ async def create_new_notice(
     Args:
         notice_data: 공지사항 생성 데이터
         db: 데이터베이스 세션
+        current_user: 현재 인증된 관리자 사용자
         
     Returns:
         NoticeResponse: 생성된 공지사항 정보
@@ -53,7 +57,7 @@ async def create_new_notice(
         HTTPException: 공지사항 생성 실패 시
     """
     try:
-        new_notice = create_notice(db, notice_data)
+        new_notice = create_notice(db, notice_data, current_user.id)
         return new_notice
         
     except Exception as e:

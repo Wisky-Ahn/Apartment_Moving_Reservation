@@ -9,11 +9,22 @@ from datetime import datetime
 from app.models.notice import Notice, NoticeType
 from app.schemas.notice import NoticeCreate, NoticeUpdate, NoticeStats
 
-def create_notice(db: Session, notice_data: NoticeCreate) -> Notice:
+def create_notice(db: Session, notice_data: NoticeCreate, author_id: int) -> Notice:
     """
     새로운 공지사항 생성
+    
+    Args:
+        db: 데이터베이스 세션
+        notice_data: 공지사항 생성 데이터
+        author_id: 작성자 사용자 ID
+        
+    Returns:
+        Notice: 생성된 공지사항 객체
     """
-    db_notice = Notice(**notice_data.dict())
+    notice_dict = notice_data.dict()
+    notice_dict['author_id'] = author_id
+    
+    db_notice = Notice(**notice_dict)
     db.add(db_notice)
     db.commit()
     db.refresh(db_notice)
