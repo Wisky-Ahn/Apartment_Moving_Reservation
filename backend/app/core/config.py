@@ -25,7 +25,14 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # CORS 설정
-    ALLOWED_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    ALLOWED_ORIGINS: list = [
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "http://localhost:3001", 
+        "http://127.0.0.1:3001",
+        "http://localhost:3002", 
+        "http://127.0.0.1:3002"
+    ]
     
     # 페이지네이션 설정
     DEFAULT_PAGE_SIZE: int = 10
