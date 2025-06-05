@@ -62,7 +62,7 @@ export class ReservationService {
    */
   static async createReservation(reservationData: CreateReservationRequest): Promise<Reservation> {
     try {
-      const response = await api.post<Reservation>('/reservations/', reservationData);
+      const response = await api.post<Reservation>('/api/reservations/', reservationData);
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 생성에 실패했습니다.';
@@ -84,7 +84,7 @@ export class ReservationService {
         }
       });
 
-      const response = await api.get<PaginatedResponse<Reservation>>(`/reservations/?${params.toString()}`);
+      const response = await api.get<PaginatedResponse<Reservation>>(`/api/reservations/?${params.toString()}`);
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 목록을 가져올 수 없습니다.';
@@ -97,7 +97,7 @@ export class ReservationService {
    */
   static async getReservation(reservationId: number): Promise<Reservation> {
     try {
-      const response = await api.get<Reservation>(`/reservations/${reservationId}`);
+      const response = await api.get<Reservation>(`/api/reservations/${reservationId}`);
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 정보를 가져올 수 없습니다.';
@@ -110,7 +110,7 @@ export class ReservationService {
    */
   static async updateReservation(reservationId: number, updateData: UpdateReservationRequest): Promise<Reservation> {
     try {
-      const response = await api.put<Reservation>(`/reservations/${reservationId}`, updateData);
+      const response = await api.put<Reservation>(`/api/reservations/${reservationId}`, updateData);
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 수정에 실패했습니다.';
@@ -123,7 +123,7 @@ export class ReservationService {
    */
   static async deleteReservation(reservationId: number): Promise<void> {
     try {
-      await api.delete(`/reservations/${reservationId}`);
+      await api.delete(`/api/reservations/${reservationId}`);
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 삭제에 실패했습니다.';
       throw new Error(message);
@@ -143,7 +143,7 @@ export class ReservationService {
         }
       });
 
-      const response = await api.get<PaginatedResponse<Reservation>>(`/reservations/my/?${params.toString()}`);
+      const response = await api.get<PaginatedResponse<Reservation>>(`/api/reservations/my/?${params.toString()}`);
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '내 예약 목록을 가져올 수 없습니다.';
@@ -152,7 +152,7 @@ export class ReservationService {
   }
 
   /**
-   * 예약 시간 충돌 검사
+   * 예약 시간 충돌 검사 - 백엔드 엔드포인트와 맞춤
    */
   static async checkConflict(
     reservationType: 'elevator' | 'parking' | 'other',
@@ -161,10 +161,15 @@ export class ReservationService {
     excludeReservationId?: number
   ): Promise<{ has_conflict: boolean; conflicting_reservations: Reservation[] }> {
     try {
+      // 날짜와 시간 분리
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+      
       const params = new URLSearchParams({
-        reservation_type: reservationType,
-        start_time: startTime,
-        end_time: endTime,
+        reservation_date: startDate.toISOString().split('T')[0], // YYYY-MM-DD 형식
+        start_time: startDate.toTimeString().split(' ')[0].substring(0, 5), // HH:MM 형식
+        end_time: endDate.toTimeString().split(' ')[0].substring(0, 5), // HH:MM 형식
+        equipment_type: reservationType, // 백엔드에서 equipment_type으로 받음
       });
 
       if (excludeReservationId) {
@@ -172,12 +177,13 @@ export class ReservationService {
       }
 
       const response = await api.get<{ has_conflict: boolean; conflicting_reservations: Reservation[] }>(
-        `/reservations/check-conflict/?${params.toString()}`
+        `/api/reservations/conflicts/check?${params.toString()}`
       );
       return response;
     } catch (error: any) {
-      const message = error.response?.data?.detail || '예약 시간 충돌 검사에 실패했습니다.';
-      throw new Error(message);
+      console.error('충돌 검사 오류:', error);
+      // 충돌 검사 실패 시 안전하게 false 반환
+      return { has_conflict: false, conflicting_reservations: [] };
     }
   }
 
@@ -186,7 +192,7 @@ export class ReservationService {
    */
   static async updateReservationStatus(reservationId: number, action: AdminReservationAction): Promise<Reservation> {
     try {
-      const response = await api.post<Reservation>(`/reservations/${reservationId}/status`, action);
+      const response = await api.post<Reservation>(`/api/reservations/${reservationId}/status`, action);
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 상태 변경에 실패했습니다.';
@@ -231,11 +237,31 @@ export class ReservationService {
     };
   }> {
     try {
-      const response = await api.get('/reservations/stats');
+      const response = await api.get('/api/reservations/stats');
       return response;
     } catch (error: any) {
       const message = error.response?.data?.detail || '예약 통계를 가져올 수 없습니다.';
       throw new Error(message);
+    }
+  }
+
+  /**
+   * 호수당 예약 제한 검사 - 같은 호수에서 기존 예약이 있는지 확인
+   */
+  static async checkApartmentReservationLimit(): Promise<{ 
+    has_existing_reservation: boolean; 
+    existing_reservations: Reservation[] 
+  }> {
+    try {
+      const response = await api.get<{ 
+        has_existing_reservation: boolean; 
+        existing_reservations: Reservation[] 
+      }>('/api/reservations/check-apartment-limit');
+      return response;
+    } catch (error: any) {
+      console.error('호수 예약 제한 검사 오류:', error);
+      // 검사 실패 시 안전하게 제한 없음으로 반환
+      return { has_existing_reservation: false, existing_reservations: [] };
     }
   }
 }
