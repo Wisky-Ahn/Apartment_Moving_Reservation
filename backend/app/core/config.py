@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     환경변수에서 설정값을 읽어옴
     """
     # 데이터베이스 설정
-    DATABASE_URL: str = "postgresql://user:password@localhost/fnm_db"
+    DATABASE_URL: str = "postgresql://fnmuser@localhost:5432/fnm_db"
     
     # 보안 설정
     SECRET_KEY: str = "your-secret-key-here"

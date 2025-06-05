@@ -76,17 +76,19 @@ def create_application() -> FastAPI:
         allow_headers=["*"],
     )
     
-    # 로깅 미들웨어 추가
-    setup_logging_middleware(app)
-    app_logger.info("Logging middleware added")
+    # 로깅 미들웨어 추가 (일시 비활성화 - request.body() 호환성 문제)
+    # setup_logging_middleware(app)
+    # app_logger.info("Logging middleware added (bug fixed)")
+    app_logger.info("Logging middleware temporarily disabled (request.body() compatibility issue)")
     
-    # 검증 미들웨어 추가
-    setup_validation_middleware(app)
-    app_logger.info("Validation middleware added")
+    # 검증 미들웨어 추가 (일시 비활성화 - 호환성 문제 발견)
+    # setup_validation_middleware(app)
+    # app_logger.info("Validation middleware added (compatibility testing)")
+    app_logger.info("Validation middleware temporarily disabled (compatibility issue found)")
     
-    # 성능 모니터링 미들웨어 추가
+    # 성능 모니터링 미들웨어 추가 (호환성 테스트)
     setup_performance_monitoring(app)
-    app_logger.info("Performance monitoring middleware added")
+    app_logger.info("Performance monitoring middleware added (compatibility testing)")
     
     # 예외 처리기 등록
     register_exception_handlers(app)

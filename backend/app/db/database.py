@@ -12,7 +12,10 @@ engine = create_engine(
     settings.DATABASE_URL,
     pool_pre_ping=True,  # 연결 확인
     pool_recycle=300,    # 5분마다 연결 재활용
-    echo=True            # SQL 쿼리 로깅 (개발용)
+    pool_size=20,        # 연결 풀 크기 증가 (기본값: 5)
+    max_overflow=30,     # 추가 연결 허용 (기본값: 10)
+    pool_timeout=30,     # 연결 대기 타임아웃 (기본값: 30초)
+    echo=False           # SQL 쿼리 로깅 비활성화 (성능 향상)
 )
 
 # 세션 팩토리 생성
@@ -28,11 +31,17 @@ def get_db():
     """
     데이터베이스 세션 의존성
     FastAPI 의존성 주입에서 사용
+    연결 누수 방지를 위한 강화된 예외 처리
     """
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        # 예외 발생 시 롤백
+        db.rollback()
+        raise e
     finally:
+        # 반드시 연결 종료
         db.close()
 
 def init_db():
@@ -54,7 +63,8 @@ def check_db_connection():
     """
     try:
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
+            from sqlalchemy import text
+            connection.execute(text("SELECT 1"))
         print("✅ 데이터베이스 연결 성공")
         return True
     except Exception as e:

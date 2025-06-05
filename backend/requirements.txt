@@ -12,4 +12,6 @@ email-validator==2.1.0
 # 알림 시스템 의존성
 aiohttp==3.9.1
 # 검증 시스템 의존성
-bleach==6.1.0 
+bleach==6.1.0
+# 고성능 패스워드 해싱
+argon2-cffi>=25.1.0
