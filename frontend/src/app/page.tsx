@@ -45,11 +45,11 @@ export default function Home() {
   };
 
   const handleReservationClick = () => {
-    router.push('/reservations');
+    router.push('/Reservations/reservations');
   };
 
   const handleNoticeClick = () => {
-    router.push('/notices');
+    router.push('/Notices/notices');
   };
 
   const handleUserClick = () => {

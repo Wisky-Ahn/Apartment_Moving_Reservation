@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { api } from '@/lib/api';
 import { 
   Users, 
   Search, 
@@ -152,17 +153,8 @@ function UserEditDialog({ user, onUserUpdated }: { user: User; onUserUpdated: ()
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/users/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('사용자 정보 수정에 실패했습니다.');
-      }
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.put(`/api/users/${user.id}`, formData);
 
       setIsOpen(false);
       onUserUpdated();
@@ -288,14 +280,9 @@ export default function AdminUsers() {
       else if (filterStatus === 'inactive') params.append('is_active', 'false');
       else if (filterStatus === 'admin') params.append('is_admin', 'true');
 
-      const response = await fetch(`http://localhost:8000/api/users/admin/users?${params}`);
-      
-      if (!response.ok) {
-        throw new Error('사용자 목록을 가져오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      setUsers(data);
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.get(`/api/users/admin/users?${params}`);
+      setUsers(response.data || response);
     } catch (error: any) {
       console.error('사용자 목록 조회 실패:', error);
       setError(error.message);
@@ -309,14 +296,9 @@ export default function AdminUsers() {
    */
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/users/admin/users/stats');
-      
-      if (!response.ok) {
-        throw new Error('사용자 통계를 가져오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      setStats(data);
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.get('/api/users/admin/users/stats');
+      setStats(response.data || response);
     } catch (error) {
       console.error('사용자 통계 조회 실패:', error);
     }
@@ -327,17 +309,8 @@ export default function AdminUsers() {
    */
   const toggleUserStatus = async (userId: number, currentStatus: boolean) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/users/admin/users/${userId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(!currentStatus),
-      });
-
-      if (!response.ok) {
-        throw new Error('사용자 상태 변경에 실패했습니다.');
-      }
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.put(`/api/users/admin/users/${userId}/status`, !currentStatus);
 
       // 목록 새로고침
       fetchUsers();
@@ -358,13 +331,8 @@ export default function AdminUsers() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/users/${userId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('사용자 삭제에 실패했습니다.');
-      }
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.delete(`/api/users/${userId}`);
 
       // 목록 새로고침
       fetchUsers();
@@ -390,20 +358,11 @@ export default function AdminUsers() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/admin/users/bulk', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(selectedUsers),
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const result = await api.delete('/api/users/admin/users/bulk', {
+        data: selectedUsers
       });
 
-      if (!response.ok) {
-        throw new Error('대량 삭제에 실패했습니다.');
-      }
-
-      const result = await response.json();
-      
       // 선택 해제 및 목록 새로고침
       setSelectedUsers([]);
       fetchUsers();

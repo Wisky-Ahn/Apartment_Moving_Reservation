@@ -4,46 +4,35 @@
  */
 "use client";
 
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Users, 
-  FileText, 
-  BarChart3, 
+import { Button } from '@/components/ui/button';
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  FileText,
+  BarChart3,
   Settings,
   LogOut,
   Home,
   User
 } from 'lucide-react';
+import { setAuthToken } from '@/lib/api';
 
 interface AdminLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: React.ComponentType<any>;
-  description: string;
-}
-
-const navigationItems: NavigationItem[] = [
+// 네비게이션 아이템 정의
+const navigationItems = [
   {
     name: '대시보드',
     href: '/admin/dashboard',
     icon: LayoutDashboard,
-    description: '관리자 홈'
-  },
-  {
-    name: '예약 관리',
-    href: '/admin/reservations',
-    icon: Calendar,
-    description: '예약 승인/거부'
+    description: '시스템 현황'
   },
   {
     name: '사용자 관리',
@@ -52,40 +41,76 @@ const navigationItems: NavigationItem[] = [
     description: '입주민 관리'
   },
   {
-    name: '공지사항 관리',
+    name: '예약 관리',
+    href: '/admin/reservations',
+    icon: Calendar,
+    description: '예약 현황'
+  },
+  {
+    name: '공지사항',
     href: '/admin/notices',
     icon: FileText,
-    description: '공지사항 CRUD'
+    description: '공지 관리'
   },
   {
     name: '통계',
     href: '/admin/statistics',
     icon: BarChart3,
-    description: '이용 현황 분석'
+    description: '이용 통계'
   },
   {
-    name: '내 정보',
+    name: '프로필',
     href: '/admin/profile',
     icon: User,
-    description: '관리자 계정 관리'
+    description: '내 정보'
+  },
+  {
+    name: '시스템 설정',
+    href: '/admin/settings',
+    icon: Settings,
+    description: '시스템 관리'
   },
 ];
+
+interface ExtendedSession {
+  accessToken?: string;
+  user: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    isAdmin?: boolean;
+    username?: string;
+  };
+}
 
 /**
  * 관리자 페이지 레이아웃
  */
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: ExtendedSession | null };
   const router = useRouter();
   const pathname = usePathname();
 
+  // 세션이 있을 때 API 클라이언트에 토큰 설정
+  React.useEffect(() => {
+    if (session?.accessToken) {
+      setAuthToken(session.accessToken);
+      console.log('🔑 NextAuth token set in AdminLayout');
+    } else {
+      setAuthToken(null);
+      console.log('⚠️ No NextAuth token available in AdminLayout');
+    }
+  }, [session]);
+
   // 로그아웃 처리
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push('/');
+    if (confirm('로그아웃 하시겠습니까?')) {
+      await signOut({ callbackUrl: '/login' });
+    }
   };
 
-  // 홈으로 돌아가기
+  // 홈으로 이동
   const handleGoHome = () => {
     router.push('/');
   };

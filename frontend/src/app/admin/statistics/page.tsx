@@ -25,6 +25,8 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts';
+import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api'; // API 클라이언트 import 추가
 
 // 색상 팔레트
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
@@ -113,41 +115,27 @@ export default function AdminStatistics() {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * 통계 데이터 로드
+   * 통계 데이터 조회
    */
   const fetchStatistics = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // 병렬로 모든 통계 데이터 요청
-      const [dashboardRes, monthlyRes, dailyRes, timeSlotRes, statusRes] = await Promise.all([
-        fetch('http://localhost:8000/api/statistics/dashboard-stats'),
-        fetch('http://localhost:8000/api/statistics/monthly-stats'),
-        fetch('http://localhost:8000/api/statistics/daily-stats'),
-        fetch('http://localhost:8000/api/statistics/time-slots-stats'),
-        fetch('http://localhost:8000/api/statistics/status-distribution')
-      ]);
-
-      // 응답 확인
-      if (!dashboardRes.ok || !monthlyRes.ok || !dailyRes.ok || !timeSlotRes.ok || !statusRes.ok) {
-        throw new Error('통계 데이터를 가져오는데 실패했습니다.');
-      }
-
-      // JSON 파싱
+      // API 클라이언트를 사용하여 병렬로 모든 통계 데이터 요청
       const [dashboard, monthly, daily, timeSlot, status] = await Promise.all([
-        dashboardRes.json(),
-        monthlyRes.json(),
-        dailyRes.json(),
-        timeSlotRes.json(),
-        statusRes.json()
+        api.get('/api/statistics/dashboard-stats'),
+        api.get('/api/statistics/monthly-stats'),
+        api.get('/api/statistics/daily-stats'),
+        api.get('/api/statistics/time-slots-stats'),
+        api.get('/api/statistics/status-distribution')
       ]);
 
-      setDashboardStats(dashboard);
-      setMonthlyData(monthly);
-      setDailyData(daily);
-      setTimeSlotData(timeSlot);
-      setStatusData(status);
+      setDashboardStats(dashboard.data || dashboard);
+      setMonthlyData(monthly.data || monthly);
+      setDailyData(daily.data || daily);
+      setTimeSlotData(timeSlot.data || timeSlot);
+      setStatusData(status.data || status);
     } catch (error: any) {
       console.error('통계 데이터 로드 실패:', error);
       setError(error.message);

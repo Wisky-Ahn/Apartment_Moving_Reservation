@@ -26,13 +26,16 @@ import {
   Star,
   Clock
 } from 'lucide-react';
+import { api } from '@/lib/api'; // API 클라이언트 import 추가
+import { getSession } from 'next-auth/react';
+import { getCurrentAuthToken } from '@/lib/api';
 
 // 공지사항 타입 정의
 interface Notice {
   id: number;
   title: string;
   content: string;
-  notice_type: 'general' | 'important' | 'maintenance' | 'event';
+  notice_type: 'general' | 'announcement' | 'event';
   is_pinned: boolean;
   is_important: boolean;
   is_active: boolean;
@@ -56,7 +59,7 @@ interface NoticeStats {
 interface NoticeFormData {
   title: string;
   content: string;
-  notice_type: 'general' | 'important' | 'maintenance' | 'event';
+  notice_type: 'general' | 'announcement' | 'event';
   is_pinned: boolean;
   is_important: boolean;
   is_active: boolean;
@@ -81,15 +84,13 @@ function NoticeStatusBadge({ notice }: { notice: Notice }) {
   // 공지사항 유형별 배지
   const typeColors = {
     general: "bg-blue-600",
-    important: "bg-orange-600", 
-    maintenance: "bg-purple-600",
+    announcement: "bg-orange-600", 
     event: "bg-green-600"
   };
   
   const typeNames = {
     general: "일반",
-    important: "중요",
-    maintenance: "점검",
+    announcement: "공지",
     event: "이벤트"
   };
   
@@ -181,41 +182,57 @@ function NoticeFormDialog({
     notice_type: notice?.notice_type || 'general',
     is_pinned: notice?.is_pinned || false,
     is_important: notice?.is_important || false,
-    is_active: notice?.is_active !== false, // 기본값 true
+    is_active: notice?.is_active || true
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 프론트엔드 validation 추가
+    if (formData.title.trim().length < 5) {
+      alert('제목은 최소 5자 이상이어야 합니다.');
+      return;
+    }
+    
+    if (formData.content.trim().length < 10) {
+      alert('내용은 최소 10자 이상이어야 합니다.');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
-      const url = notice 
-        ? `http://localhost:8000/api/notices/${notice.id}`
-        : 'http://localhost:8000/api/notices/';
+      // 전송할 데이터 구성
+      const requestData = {
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        notice_type: formData.notice_type,
+        is_pinned: formData.is_pinned,
+        is_important: formData.is_important
+      };
       
-      const method = notice ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          author_id: 1 // 임시로 슈퍼관리자 ID 사용
-        }),
-      });
+      // 디버깅을 위한 로깅
+      console.log('📤 공지사항 전송 데이터:', requestData);
 
-      if (!response.ok) {
-        throw new Error('공지사항 저장에 실패했습니다.');
+      if (notice) {
+        // 수정 - API 클라이언트 사용
+        const response = await api.put(`/api/notices/${notice.id}`, requestData);
+        console.log('✅ 공지사항 수정 응답:', response);
+      } else {
+        // 생성 - API 클라이언트 사용  
+        const response = await api.post('/api/notices/', requestData);
+        console.log('✅ 공지사항 생성 응답:', response);
       }
 
       setIsOpen(false);
       onNoticeUpdated();
       alert(notice ? '공지사항이 수정되었습니다.' : '공지사항이 작성되었습니다.');
     } catch (error: any) {
-      console.error('공지사항 저장 실패:', error);
-      alert('공지사항 저장에 실패했습니다: ' + error.message);
+      console.error('❌ 공지사항 저장 실패:', error);
+      console.error('❌ 응답 데이터:', error.response?.data);
+      
+      const errorMsg = error.response?.data?.detail || error.message || '알 수 없는 오류가 발생했습니다.';
+      alert('공지사항 저장에 실패했습니다: ' + errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -255,8 +272,7 @@ function NoticeFormDialog({
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="general">일반</option>
-                  <option value="important">중요</option>
-                  <option value="maintenance">점검</option>
+                  <option value="announcement">공지</option>
                   <option value="event">이벤트</option>
                 </select>
               </div>
@@ -342,6 +358,22 @@ export default function AdminNotices() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(20);
 
+  // 디버깅용: 컴포넌트 로드 시 토큰 상태 확인
+  useEffect(() => {
+    console.log('🔍 AdminNotices 컴포넌트 로드됨');
+    
+    const checkToken = async () => {
+      const session = await getSession();
+      console.log('🔍 세션 정보:', session);
+      console.log('🔍 액세스 토큰:', session?.accessToken ? '존재' : '없음');
+      
+      const currentToken = getCurrentAuthToken();
+      console.log('🔍 현재 설정된 토큰:', currentToken ? '존재' : '없음');
+    };
+    
+    checkToken();
+  }, []);
+
   /**
    * 공지사항 목록 조회
    */
@@ -363,14 +395,9 @@ export default function AdminNotices() {
       else if (filterStatus === 'pinned') params.append('is_pinned', 'true');
       else if (filterStatus === 'important') params.append('is_important', 'true');
 
-      const response = await fetch(`http://localhost:8000/api/notices/?${params}`);
-      
-      if (!response.ok) {
-        throw new Error('공지사항 목록을 가져오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      setNotices(data.notices || []);
+      // API 클라이언트 사용
+      const data = await api.get(`/api/notices/?${params}`);
+      setNotices(data.notices || data);
     } catch (error: any) {
       console.error('공지사항 목록 조회 실패:', error);
       setError(error.message);
@@ -384,14 +411,9 @@ export default function AdminNotices() {
    */
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/notices/stats');
-      
-      if (!response.ok) {
-        throw new Error('공지사항 통계를 가져오는데 실패했습니다.');
-      }
-
-      const data = await response.json();
-      setStats(data);
+      // API 클라이언트 사용
+      const data = await api.get('/api/notices/stats');
+      setStats(data.data || data);
     } catch (error) {
       console.error('공지사항 통계 조회 실패:', error);
     }
@@ -402,20 +424,15 @@ export default function AdminNotices() {
    */
   const togglePin = async (noticeId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/notices/${noticeId}/toggle-pin`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('고정 상태 변경에 실패했습니다.');
-      }
+      // API 클라이언트 사용
+      const response = await api.put(`/api/notices/${noticeId}/toggle-pin`);
 
       fetchNotices();
       fetchStats();
-      alert('고정 상태가 변경되었습니다.');
+      alert('공지사항 고정 상태가 변경되었습니다.');
     } catch (error: any) {
-      console.error('고정 상태 변경 실패:', error);
-      alert('고정 상태 변경에 실패했습니다: ' + error.message);
+      console.error('공지사항 고정 설정 실패:', error);
+      alert('공지사항 고정 설정에 실패했습니다: ' + error.message);
     }
   };
 
@@ -424,20 +441,15 @@ export default function AdminNotices() {
    */
   const toggleActive = async (noticeId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/notices/${noticeId}/toggle-active`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('활성화 상태 변경에 실패했습니다.');
-      }
+      // API 클라이언트 사용
+      const response = await api.put(`/api/notices/${noticeId}/toggle-active`);
 
       fetchNotices();
       fetchStats();
-      alert('활성화 상태가 변경되었습니다.');
+      alert('공지사항 활성화 상태가 변경되었습니다.');
     } catch (error: any) {
-      console.error('활성화 상태 변경 실패:', error);
-      alert('활성화 상태 변경에 실패했습니다: ' + error.message);
+      console.error('공지사항 활성화 설정 실패:', error);
+      alert('공지사항 활성화 설정에 실패했습니다: ' + error.message);
     }
   };
 
@@ -450,13 +462,8 @@ export default function AdminNotices() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/notices/${noticeId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('공지사항 삭제에 실패했습니다.');
-      }
+      // API 클라이언트 사용
+      const response = await api.delete(`/api/notices/${noticeId}`);
 
       fetchNotices();
       fetchStats();
@@ -583,8 +590,7 @@ export default function AdminNotices() {
                   >
                     <option value="all">모든 유형</option>
                     <option value="general">일반</option>
-                    <option value="important">중요</option>
-                    <option value="maintenance">점검</option>
+                    <option value="announcement">공지</option>
                     <option value="event">이벤트</option>
                   </select>
                   <select

@@ -20,6 +20,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { api } from '@/lib/api'; // API 클라이언트 import 추가
 
 // 예약 상태 타입 정의
 type ReservationStatus = 'pending' | 'approved' | 'rejected';
@@ -102,17 +103,12 @@ export default function AdminDashboard() {
   const fetchPendingAdmins = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:8000/api/users/admin/pending');
-      
-      if (!response.ok) {
-        throw new Error('승인 대기 목록을 가져오는데 실패했습니다.');
-      }
-      
-      const data = await response.json();
-      setPendingAdmins(data);
-    } catch (error: any) {
-      console.error('승인 대기 목록 조회 실패:', error);
-      setError(error.message);
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.get('/api/users/admin/pending');
+      setPendingAdmins(response.data || response);
+    } catch (error) {
+      console.error('승인 대기 관리자 목록 조회 실패:', error);
+      setError('승인 대기 관리자 목록을 가져오는데 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -121,19 +117,17 @@ export default function AdminDashboard() {
   /**
    * 관리자 승인 처리
    */
-  const handleApproveAdmin = async (userId: number) => {
+  const approveAdmin = async (userId: number, username: string) => {
+    if (!confirm(`'${username}' 사용자를 관리자로 승인하시겠습니까?`)) {
+      return;
+    }
+
     try {
-      const response = await fetch(`http://localhost:8000/api/users/admin/${userId}/approve`, {
-        method: 'POST',
-      });
-      
-      if (!response.ok) {
-        throw new Error('관리자 승인에 실패했습니다.');
-      }
-      
-      // 목록 새로고침
-      fetchPendingAdmins();
-      alert('관리자가 승인되었습니다.');
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.put(`/api/users/admin/${userId}/approve`);
+
+      alert('관리자 승인이 완료되었습니다.');
+      fetchPendingAdmins(); // 목록 새로고침
     } catch (error: any) {
       console.error('관리자 승인 실패:', error);
       alert('관리자 승인에 실패했습니다: ' + error.message);
@@ -143,23 +137,17 @@ export default function AdminDashboard() {
   /**
    * 관리자 거부 처리
    */
-  const handleRejectAdmin = async (userId: number) => {
-    if (!confirm('정말로 이 관리자 신청을 거부하시겠습니까?')) {
+  const rejectAdmin = async (userId: number, username: string) => {
+    if (!confirm(`'${username}' 사용자의 관리자 신청을 거부하시겠습니까?`)) {
       return;
     }
-    
+
     try {
-      const response = await fetch(`http://localhost:8000/api/users/admin/${userId}/reject`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        throw new Error('관리자 거부에 실패했습니다.');
-      }
-      
-      // 목록 새로고침
-      fetchPendingAdmins();
+      // API 클라이언트 사용으로 변경 (NextAuth 토큰 포함)
+      const response = await api.put(`/api/users/admin/${userId}/reject`);
+
       alert('관리자 신청이 거부되었습니다.');
+      fetchPendingAdmins(); // 목록 새로고침
     } catch (error: any) {
       console.error('관리자 거부 실패:', error);
       alert('관리자 거부에 실패했습니다: ' + error.message);
@@ -275,14 +263,14 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex space-x-2">
                         <Button 
-                          onClick={() => handleApproveAdmin(admin.id)}
+                          onClick={() => approveAdmin(admin.id, admin.username)}
                           size="sm"
                           className="bg-green-600 hover:bg-green-700"
                         >
                           승인
                         </Button>
                         <Button 
-                          onClick={() => handleRejectAdmin(admin.id)}
+                          onClick={() => rejectAdmin(admin.id, admin.username)}
                           size="sm"
                           variant="destructive"
                         >
