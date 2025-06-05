@@ -239,6 +239,11 @@ class UserInDB(UserBase):
 
 class UserResponse(UserInDB):
     """사용자 응답 스키마 (비밀번호 제외)"""
+    apartment_number: Optional[str] = Field(
+        None, 
+        pattern=r'^[0-9]{1,4}동\s?[0-9]{1,4}호$',
+        description="아파트 동호수 (예: 101동 1001호)"
+    )
     
     class Config:
         from_attributes = True
